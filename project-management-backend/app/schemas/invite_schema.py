@@ -1,0 +1,84 @@
+from marshmallow import Schema, fields, validate, ValidationError, validates
+
+
+class InviteCreateSchema(Schema):
+    """Schema para crear invitación con datos enriquecidos"""
+    email = fields.Email(required=True, error_messages={
+        'required': 'El email es requerido',
+        'invalid': 'Email inválido'
+    })
+    job_title = fields.Str(required=True, validate=validate.Length(min=2, max=100), allow_none=False, error_messages={
+        'required': 'El puesto es requerido',
+        'invalid': 'El puesto debe tener entre 2 y 100 caracteres'
+    })
+    description = fields.Str(required=False, validate=validate.Length(max=500), allow_none=True)
+    responsibilities = fields.Str(required=False, validate=validate.Length(max=1000), allow_none=True)
+    skills = fields.Str(required=False, validate=validate.Length(max=500), allow_none=True)
+    shift = fields.Str(required=True, validate=validate.OneOf(['morning', 'afternoon', 'night', 'flexible']), allow_none=False, error_messages={
+        'required': 'El turno es requerido',
+        'invalid': 'Turno inválido'
+    })
+    department = fields.Str(required=True, validate=validate.Length(min=2, max=100), allow_none=False, error_messages={
+        'required': 'El departamento es requerido',
+        'invalid': 'El departamento debe tener entre 2 y 100 caracteres'
+    })
+    phone = fields.Str(required=True, validate=validate.Length(max=20), allow_none=False, error_messages={
+        'required': 'El teléfono es requerido'
+    })
+
+    @validates('phone')
+    def validate_phone(self, value):
+        if not isinstance(value, str) or not value.strip():
+            raise ValidationError('El teléfono es requerido')
+        if not all((ch.isdigit() or ch in '+-() ') for ch in value):
+            raise ValidationError('El teléfono contiene caracteres inválidos')
+        digits = ''.join(ch for ch in value if ch.isdigit())
+        if not digits.startswith('52'):
+            raise ValidationError('El teléfono debe iniciar con +52')
+        local = digits[2:]
+        if len(local) != 10:
+            raise ValidationError('El teléfono debe contener 10 dígitos después de +52')
+
+
+class InviteSchema(Schema):
+    """Schema para serializar invitación (respuesta)"""
+    id = fields.Str(dump_only=True)
+    project_id = fields.Str(dump_only=True)
+    email = fields.Str(dump_only=True)
+    token = fields.Str(dump_only=True)
+    status = fields.Str(dump_only=True)
+    invited_by = fields.Str(dump_only=True)
+    resend_count = fields.Int(dump_only=True)
+    job_title = fields.Str(dump_only=True, allow_none=True)
+    description = fields.Str(dump_only=True, allow_none=True)
+    responsibilities = fields.Str(dump_only=True, allow_none=True)
+    skills = fields.Str(dump_only=True, allow_none=True)
+    shift = fields.Str(dump_only=True, allow_none=True)
+    department = fields.Str(dump_only=True, allow_none=True)
+    phone = fields.Str(dump_only=True, allow_none=True)
+    created_at = fields.DateTime(dump_only=True)
+    expires_at = fields.DateTime(dump_only=True)
+    accepted_at = fields.DateTime(dump_only=True, allow_none=True)
+    updated_at = fields.DateTime(dump_only=True, allow_none=True)
+
+
+class InviteWithInviterSchema(InviteSchema):
+    """Schema para invitación con información del invitador"""
+    inviter_name = fields.Str(dump_only=True)
+    inviter_email = fields.Str(dump_only=True)
+
+
+class AcceptInviteSchema(Schema):
+    """Schema para aceptar invitación"""
+    token = fields.Str(required=True, error_messages={
+        'required': 'El token es requerido'
+    })
+    password = fields.Str(required=True, validate=validate.Length(min=8, max=100), error_messages={
+        'required': 'La contraseña es requerida',
+        'invalid': 'La contraseña debe tener al menos 8 caracteres'
+    })
+    name = fields.Str(required=True, validate=validate.Length(min=2, max=255), error_messages={
+        'required': 'El nombre es requerido',
+        'invalid': 'El nombre debe tener entre 2 y 255 caracteres'
+    })
+    avatar = fields.Str(required=False, allow_none=True, validate=validate.Length(max=500))

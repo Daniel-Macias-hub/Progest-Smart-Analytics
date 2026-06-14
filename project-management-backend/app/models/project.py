@@ -1,0 +1,75 @@
+from datetime import datetime
+from app import db
+import uuid
+
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    
+    # Primary Key
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    # Basic Info
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    category = db.Column(db.String(100), nullable=True)
+
+    # Project settings
+    timezone = db.Column(db.String(64), nullable=False, default='America/Mexico_City')
+    date_format = db.Column(db.String(32), nullable=False, default='dd/MM/yyyy')
+    state = db.Column(db.String(64), nullable=True)
+    tasks_retention_days = db.Column(db.Integer, nullable=False, default=30)
+    sprint_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    sprint_length_days = db.Column(db.Integer, nullable=False, default=14)
+    
+    # Owner (1 proyecto por owner - RF-007)
+    owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False, unique=True, index=True)
+    
+    # Status: active, disabled
+    status = db.Column(db.Enum('active', 'disabled', name='project_status'), default='active', nullable=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    # Owner del proyecto
+    owner = db.relationship('User', back_populates='owned_project', foreign_keys=[owner_id])
+    
+    # Membresías (employees) - N:M a través de Membership
+    memberships = db.relationship('Membership', back_populates='project', cascade='all, delete-orphan')
+    
+    # Tareas del proyecto
+    tasks = db.relationship('Task', back_populates='project', cascade='all, delete-orphan')
+    
+    # Invitaciones del proyecto
+    invites = db.relationship('Invite', back_populates='project', cascade='all, delete-orphan')
+    
+    # Notificaciones del proyecto
+    notifications = db.relationship('Notification', back_populates='project', cascade='all, delete-orphan')
+    
+    # Logs de auditoría
+    audit_logs = db.relationship('AuditLog', back_populates='project')
+
+    sprints = db.relationship('Sprint', back_populates='project', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<Project {self.name}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'category': self.category,
+            'timezone': self.timezone,
+            'date_format': self.date_format,
+            'state': self.state,
+            'tasks_retention_days': self.tasks_retention_days,
+            'sprint_enabled': self.sprint_enabled,
+            'sprint_length_days': self.sprint_length_days,
+            'owner_id': self.owner_id,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
