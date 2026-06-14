@@ -52,3 +52,8 @@ playwright-tests/test-results/
 # Misc
 *.tsbuildinfo
 .vercel
+
+# Temporary files and logs
+frontend_err.txt
+frontend_out.txt
+test-results/
