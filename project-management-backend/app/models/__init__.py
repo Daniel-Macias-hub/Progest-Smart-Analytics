@@ -10,6 +10,7 @@ from app.models.notification import Notification
 from app.models.comment import Comment
 from app.models.audit_log import AuditLog
 from app.models.team_message import TeamMessage
+from app.models.task_state_history import TaskStateHistory
 
 __all__ = [
     'User',
@@ -21,5 +22,6 @@ __all__ = [
     'Notification',
     'Comment',
     'AuditLog',
-    'TeamMessage'
+    'TeamMessage',
+    'TaskStateHistory'
 ]

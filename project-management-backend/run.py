@@ -50,7 +50,7 @@ def log_request():
         print(f'Body: {body}')
 
 # Importar modelos después de inicializar db
-from app.models import User, Project, Membership, Task, Sprint, Invite, Notification, Comment, AuditLog, TeamMessage
+from app.models import User, Project, Membership, Task, Sprint, Invite, Notification, Comment, AuditLog, TeamMessage, TaskStateHistory
 
 # Importar rutas
 from app.routes import auth_bp, projects_bp, invites_bp, members_bp, tasks_bp, sprints_bp, notifications_bp, comments_bp, admin_bp, team_chat_bp

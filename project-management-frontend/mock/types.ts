@@ -102,6 +102,10 @@ export interface Task {
   tags: string[]
   checklist?: ChecklistItem[]
   comments: Comment[]
+  risk_status?: "no_risk" | "low" | "medium" | "high"
+  delay_probability?: number
+  predicted_delay_days?: number
+  risk_factors?: Record<string, boolean>
   created_at: string
   updated_at: string
 }

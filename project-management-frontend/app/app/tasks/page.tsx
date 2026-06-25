@@ -41,6 +41,7 @@ import { TASK_STATUS_LABELS, TASK_PRIORITY_LABELS, TASK_STATUS_COLORS, TASK_PRIO
 import { cn } from "@/lib/utils"
 import { SPRINT_COLOR_CLASS } from "@/lib/sprintColors"
 import { normalizeAvatarUrl } from "@/lib/avatars"
+import { RiskBadge } from "@/components/ui/risk-badge"
 
 export default function TasksPage() {
   const session = useAuthStore((s) => s.session)
@@ -1102,6 +1103,14 @@ export default function TasksPage() {
                       <Badge variant="outline" className={cn("text-[10px] bg-white/10 border-white/20 text-white", TASK_PRIORITY_COLORS[t.priority])}>
                         {TASK_PRIORITY_LABELS[t.priority]}
                       </Badge>
+
+                      <RiskBadge
+                        variant="normal"
+                        riskStatus={t.risk_status ?? "no_risk"}
+                        delayProbability={t.delay_probability}
+                        predictedDelayDays={t.predicted_delay_days}
+                        riskFactors={t.risk_factors}
+                      />
 
                       {sprintEnabled ? (
                         t.sprint_id ? (

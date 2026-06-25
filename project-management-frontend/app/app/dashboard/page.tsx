@@ -12,6 +12,8 @@ import { normalizeAvatarUrl } from "@/lib/avatars"
 import { cn } from "@/lib/utils"
 import { AnimatedFlashCard, AnimatedFlashCardVariant } from "@/components/ui/animated-flash-card"
 import { AnimatedExportButton } from "@/components/ui/animated-export-button"
+import { RiskBadge } from "@/components/ui/risk-badge"
+import { Progress } from "@/components/ui/progress"
 import "./animated-cards.css"
 
 export default function DashboardPage() {
@@ -90,7 +92,6 @@ export default function DashboardPage() {
   const total = projectTasks.length
   const completionRate = total > 0 ? Math.round((done / total) * 100) : 0
 
-  type StatItem = { label: string; value: string | number; variant: AnimatedFlashCardVariant; action: string; url: string }
   const stats: StatItem[] = [
     { label: "Total Tareas", value: total, variant: "info", action: "Detalles", url: "/app/board" },
     { label: "Completadas", value: done, variant: "success", action: "Ver Board", url: "/app/board" },
@@ -100,6 +101,28 @@ export default function DashboardPage() {
     { label: "Miembros", value: members.length, variant: "info", action: "Equipo", url: "/app/team" },
     { label: "Completado (%)", value: `${completionRate}%`, variant: "success", action: "Reportes", url: "/app/reports" },
   ]
+
+  // Smart Risk Engine KPIs
+  const highRiskCount = projectTasks.filter((t) => t.risk_status === "high").length
+  const mediumRiskCount = projectTasks.filter((t) => t.risk_status === "medium").length
+  const noRiskCount = projectTasks.filter((t) => !t.risk_status || t.risk_status === "no_risk").length
+  const avgProb = projectTasks.length > 0
+    ? projectTasks.reduce((acc, t) => acc + (t.delay_probability || 0), 0) / projectTasks.length
+    : 0
+  const avgProbPct = Math.round(avgProb * 100)
+  
+  const riskStats: StatItem[] = [
+    { label: "Tareas Riesgo Alto", value: highRiskCount, variant: "error", action: "Revisar", url: "/app/tasks" },
+    { label: "Riesgo Medio", value: mediumRiskCount, variant: "working", action: "Detalles", url: "/app/tasks" },
+    { label: "Sin Riesgo", value: noRiskCount, variant: "success", action: "Ver", url: "/app/tasks" },
+    { label: "Probabilidad Promedio", value: `${avgProbPct}%`, variant: "info", action: "Reportes", url: "/app/reports" },
+  ]
+
+  // Top 3 Risk Tasks
+  const topRiskTasks = [...projectTasks]
+    .filter(t => t.status !== "done" && t.risk_status !== "no_risk" && (t.delay_probability ?? 0) > 0)
+    .sort((a, b) => (b.delay_probability || 0) - (a.delay_probability || 0))
+    .slice(0, 3)
 
   function exportToCSV() {
     const header = "Metrica,Valor\n"
@@ -163,6 +186,62 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Smart Risk Engine Section */}
+      <div className="flex flex-col gap-4 mt-8 mb-6">
+        <h2 className="text-[24px] font-[600] text-admin-dark ml-2">Smart Risk Engine</h2>
+        
+        {/* Risk KPIs */}
+        <div className="flex flex-row flex-wrap items-center justify-center p-0 m-0 w-full">
+          {riskStats.map((s, i) => (
+            <div key={i} className="flex-shrink-0 flex-grow-0 w-full max-w-[288px] sm:-mx-6 transform scale-[0.80] hover:scale-[0.83] transition-transform origin-center">
+              <AnimatedFlashCard 
+                  variant={s.variant} 
+                  value={isLoading ? "—" : s.value} 
+                  label={s.label} 
+                  actionLabel={s.action}
+                  onAction={s.url ? () => router.push(s.url) : undefined}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Top Risk Tasks Summary */}
+        {topRiskTasks.length > 0 && (
+          <div className="mx-2 mt-2 p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">Tareas con Mayor Probabilidad de Retraso</h3>
+            <div className="flex flex-col gap-3">
+              {topRiskTasks.map(t => (
+                <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-4 flex-1">
+                    <RiskBadge
+                      variant="dashboard"
+                      riskStatus={t.risk_status ?? "no_risk"}
+                      delayProbability={t.delay_probability}
+                      predictedDelayDays={t.predicted_delay_days}
+                      riskFactors={t.risk_factors}
+                      lightBackground
+                    />
+                    <Link href={`/app/tasks/${t.id}`} className="font-medium text-slate-700 hover:text-admin-blue hover:underline">
+                      {t.title}
+                    </Link>
+                  </div>
+                  <div className="flex flex-col items-end min-w-[120px]">
+                    <span className="text-xs text-slate-500 mb-1">
+                      {t.predicted_delay_days ? `~${t.predicted_delay_days} días de retraso` : "Retraso inminente"}
+                    </span>
+                    <Progress 
+                      value={Math.round((t.delay_probability || 0) * 100)} 
+                      className="h-2 w-full"
+                      indicatorClassName="bg-red-500"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-[24px] mt-[12px] w-full text-white transform scale-[0.95] origin-top">

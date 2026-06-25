@@ -83,3 +83,45 @@ export const CATEGORIES = [
   "Ventas",
   "Legal",
 ]
+
+// ── Smart Risk Engine ─────────────────────────────────────
+
+export const RISK_LEVEL_LABELS: Record<string, string> = {
+  no_risk: "Sin Riesgo",
+  low: "Riesgo Bajo",
+  medium: "Riesgo Medio",
+  high: "Riesgo Alto",
+}
+
+export const RISK_LEVEL_LABELS_SHORT: Record<string, string> = {
+  no_risk: "Sin riesgo",
+  low: "Bajo",
+  medium: "Medio",
+  high: "Alto",
+}
+
+/** Colores diseñados para fondo oscuro (tarjetas bg-admin-blue) */
+export const RISK_LEVEL_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+  no_risk: { bg: "bg-white/10", text: "text-white/60", dot: "bg-white/40" },
+  low:     { bg: "bg-sky-500/20", text: "text-sky-200", dot: "bg-sky-400" },
+  medium:  { bg: "bg-amber-500/20", text: "text-amber-200", dot: "bg-amber-400" },
+  high:    { bg: "bg-red-500/20", text: "text-red-200", dot: "bg-red-400" },
+}
+
+/** Colores para fondos claros (dashboard, modales) */
+export const RISK_LEVEL_COLORS_LIGHT: Record<string, { bg: string; text: string; dot: string }> = {
+  no_risk: { bg: "bg-slate-100", text: "text-slate-500", dot: "bg-slate-400" },
+  low:     { bg: "bg-sky-100", text: "text-sky-700", dot: "bg-sky-500" },
+  medium:  { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-500" },
+  high:    { bg: "bg-red-100", text: "text-red-700", dot: "bg-red-500" },
+}
+
+export const RISK_FACTOR_LABELS: Record<string, string> = {
+  is_unassigned: "Sin asignar",
+  is_overdue: "Fecha vencida",
+  is_high_priority: "Prioridad alta/urgente",
+  is_blocked: "Tarea bloqueada",
+  has_no_due_date: "Sin fecha de vencimiento",
+  has_many_state_changes: "Muchos cambios de estado",
+  is_stale: "Sin actividad reciente",
+}

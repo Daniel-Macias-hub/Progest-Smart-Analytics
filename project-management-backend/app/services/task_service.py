@@ -3,6 +3,7 @@ from app import db
 from app.models import Task, User, Project, Sprint, Membership, Notification, AuditLog
 from sqlalchemy import or_, and_
 from app.realtime.notifications_hub import notifications_hub
+from app.services.risk_engine_service import SmartRiskEngineService
 
 
 class TaskService:
@@ -70,6 +71,10 @@ class TaskService:
         db.session.add(new_task)
         db.session.flush()
         
+        # Registrar estado inicial y calcular riesgo basal
+        SmartRiskEngineService.log_state_transition(new_task.id, None, new_task.status, creator_id)
+        SmartRiskEngineService.update_task_risk_metrics(new_task.id)
+        
         return new_task
     
     @staticmethod
@@ -117,6 +122,7 @@ class TaskService:
         
         # Employee puede cambiar status y checklist (solo toggle)
         if user_role == 'EMPLOYEE':
+            old_status = task.status
             # Permitir cambio de status
             if 'status' in data:
                 task.status = data['status']
@@ -126,6 +132,12 @@ class TaskService:
                 task.checklist = data['checklist']
             
             task.updated_at = datetime.utcnow()
+            
+            if 'status' in data:
+                SmartRiskEngineService.log_state_transition(task.id, old_status, task.status, user_id)
+            
+            # Calcular riesgo después del cambio
+            SmartRiskEngineService.update_task_risk_metrics(task.id)
             return task
         
         # Owner puede cambiar todo
@@ -151,6 +163,12 @@ class TaskService:
                 task.completed_at = datetime.utcnow()
         
         task.updated_at = datetime.utcnow()
+        
+        if 'status' in data:
+            SmartRiskEngineService.log_state_transition(task.id, old_status, task.status, user_id)
+        
+        # Calcular riesgo después de los cambios del Owner
+        SmartRiskEngineService.update_task_risk_metrics(task.id)
         
         return task
     
@@ -278,6 +296,10 @@ class TaskService:
         task.assigned_to = assignee_id
         task.updated_at = datetime.utcnow()
         
+        # Guardar en DB para que el motor cuente correctamente la carga
+        db.session.flush()
+        SmartRiskEngineService.update_task_risk_metrics(task.id)
+        
         return task, old_assigned_to
     
     @staticmethod
@@ -295,6 +317,12 @@ class TaskService:
         # Si se marca como done, guardar fecha de completado
         if new_status == 'done' and old_status != 'done':
             task.completed_at = datetime.utcnow()
+            
+        db.session.flush()
+        
+        # Registrar cambio en la telemetría e invocar motor de riesgos
+        SmartRiskEngineService.log_state_transition(task.id, old_status, new_status, user_id)
+        SmartRiskEngineService.update_task_risk_metrics(task.id)
         
         return task
     

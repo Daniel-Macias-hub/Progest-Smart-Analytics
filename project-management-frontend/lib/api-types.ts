@@ -108,6 +108,11 @@ export interface BackendTask {
   tags: string[] | null
   created_at: string
   updated_at: string
+  // Smart Risk Engine fields
+  risk_status?: string
+  delay_probability?: number
+  predicted_delay_days?: number
+  risk_factors?: Record<string, boolean> | null
   // Campos adicionales del endpoint GET /tasks/<id>
   creator_name?: string
   assignee_name?: string

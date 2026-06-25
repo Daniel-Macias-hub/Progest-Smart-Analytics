@@ -82,6 +82,10 @@ export function mapTaskFromBackend(task: any): Task {
     tags: task.tags || [],
     checklist: task.checklist || [],
     comments: [], // Se cargan por separado
+    risk_status: task.risk_status ?? "no_risk",
+    delay_probability: task.delay_probability ?? 0,
+    predicted_delay_days: task.predicted_delay_days ?? 0,
+    risk_factors: task.risk_factors || {},
     created_at: task.created_at,
     updated_at: task.updated_at,
   }

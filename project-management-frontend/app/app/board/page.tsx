@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { normalizeAvatarUrl } from "@/lib/avatars"
 import { SPRINT_COLOR_CLASS } from "@/lib/sprintColors"
 import { cn } from "@/lib/utils"
+import { RiskBadge } from "@/components/ui/risk-badge"
 
 const COLUMNS: TaskStatus[] = ["pending", "in_progress", "in_review", "blocked", "done"]
 
@@ -340,9 +341,18 @@ export default function BoardPage() {
                             <div className="h-1.5 w-1.5 rounded-full bg-white/50" />
                           </div>
                           <CardContent className="p-3">
-                            <Link href={`/app/tasks/${t.id}`} className="block truncate text-[12px] font-semibold text-white hover:underline mb-2">
-                              {t.title}
-                            </Link>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <Link href={`/app/tasks/${t.id}`} className="block truncate text-[12px] font-semibold text-white hover:underline">
+                                {t.title}
+                              </Link>
+                              <RiskBadge
+                                variant="compact"
+                                riskStatus={t.risk_status ?? "no_risk"}
+                                delayProbability={t.delay_probability}
+                                predictedDelayDays={t.predicted_delay_days}
+                                riskFactors={t.risk_factors}
+                              />
+                            </div>
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
                               <Badge variant="outline" className={cn("text-[10px] bg-white/10 border-white/20 text-white", TASK_PRIORITY_COLORS[t.priority])}>
                                 {TASK_PRIORITY_LABELS[t.priority]}

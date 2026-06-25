@@ -121,6 +121,13 @@ class TaskSchema(Schema):
     completed_at = fields.DateTime(dump_only=True, allow_none=True)
     tags = fields.List(fields.Str(), dump_only=True, allow_none=True)
     checklist = fields.List(fields.Nested(ChecklistItemSchema), dump_only=True)
+    
+    # Smart Risk Engine fields
+    risk_status = fields.Str(dump_only=True)
+    delay_probability = fields.Float(dump_only=True)
+    predicted_delay_days = fields.Int(dump_only=True)
+    risk_factors = fields.Dict(dump_only=True)
+    
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True, allow_none=True)
 
