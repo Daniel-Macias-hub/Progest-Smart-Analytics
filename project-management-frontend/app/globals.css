@@ -2,18 +2,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* ── Estilos Extraídos de Componentes ── */
-@import url("../components/marketing/vip-pass.css");
-@import url("../components/ui/brutalist-input.css");
-@import url("../components/ui/electric-border.css");
-@import url("../components/marketing/cyber-modal.css");
-@import url("../components/ui/iridescent-button.css");
-@import url("../components/marketing/marketing-header.css");
-@import url("./onboarding/onboarding.css");
-@import url("./(marketing)/faq/faq.css");
-@import url("./(marketing)/marketing.css");
-@import url("./auth/register/register.css");
-@import url("./app/dashboard/animated-cards.css");
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 :root, [data-theme="light"] {

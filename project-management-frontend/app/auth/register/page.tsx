@@ -73,14 +73,93 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-background overflow-x-hidden p-6 lg:p-12">
-
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @import url("https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@600;900&display=swap");
+        
+        .brutalist-bg {
+          background-color: color-mix(in srgb, var(--muted) 30%, var(--background));
+        }
+        .outer-frame {
+          pointer-events: none;
+          position: fixed;
+          inset: 1rem;
+          border: 4px solid black;
+          z-index: 100;
+        }
+        .brutalist-btn-shadow {
+          position: absolute;
+          inset: 0;
+          background: black;
+          z-index: -1;
+        }
+        .brutalist-btn:hover .brutalist-btn-content {
+          transform: translate(-4px, -4px);
+        }
+        .brutalist-btn-content {
+          transition: transform 0.2s ease;
+        }
+      `}} />
 
       {/* ── Marco Exterior Brutalista ── */}
       <div className="outer-frame hidden md:block" />
 
       {/* ── Fondo de Infinity Loop Centrado ── */}
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-30 lg:opacity-50">
-
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          .finny {
+            stroke-width: 1.43;
+            animation: rot 36s linear infinite;
+            perspective: 500px;
+            width: 80vw;
+            height: 60vh;
+          }
+          .fbottom {
+            fill: none;
+            stroke-width: inherit;
+            stroke: var(--muted-foreground);
+            stroke-opacity: 0.2;
+          }
+          .ll {
+            fill: none;
+            stroke: var(--primary);
+            animation: loop 3s linear infinite;
+            stroke-width: 0.35;
+            stroke-dasharray: 3 24.5;
+            stroke-linecap: round;
+            animation-delay: -1.5s;
+          }
+          .shad {
+            animation: raise 3s linear infinite;
+          }
+          .shad.odd {
+            animation-delay: -1.5s;
+          }
+          .clip-shadow {
+            stroke-linecap: butt;
+            fill: none;
+            opacity: 0.25;
+            stroke-width: inherit;
+            stroke: url(#sgrad);
+          }
+          @keyframes raise {
+            0%, 20% { opacity: 1; }
+            30%, 70% { opacity: 0; }
+            80%, 100% { opacity: 1; }
+          }
+          @keyframes loop {
+            0% { stroke-dashoffset: 0.5; }
+            100% { stroke-dashoffset: 28; }
+          }
+          @keyframes rot {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          #sgrad stop {
+            stop-color: var(--primary);
+          }
+        `}} />
         <svg className="finny" viewBox="-1 -1 12 8">
           <defs>
             <path id="infinite" d="M5 3C4 2 3.1 1 2 1a2 2  0 000 4c1.1 0 2-1 3-2s1.9-2  3-2a2 2 0 010 4C6.9  5 6 4 5 3"></path>

@@ -14,7 +14,7 @@ import { AnimatedFlashCard, AnimatedFlashCardVariant } from "@/components/ui/ani
 import { AnimatedExportButton } from "@/components/ui/animated-export-button"
 import { RiskBadge } from "@/components/ui/risk-badge"
 import { Progress } from "@/components/ui/progress"
-
+import "./animated-cards.css"
 
 export default function DashboardPage() {
   const router = useRouter()
