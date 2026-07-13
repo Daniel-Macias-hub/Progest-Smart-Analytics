@@ -273,7 +273,7 @@ export default function LandingPage() {
       <section className="border-y bg-foreground text-background">
         <FadeIn className="mx-auto max-w-[64rem] px-4 py-20 md:py-24 text-center">
           <blockquote className="mx-auto max-w-3xl text-xl font-medium leading-relaxed sm:text-2xl sm:leading-10">
-            "ProGest simplifica la gestión operativa al instante, dotando a nuestra estructura base de visibilidad y gobernanza sobre el estado de cada iteración del proyecto sin curva de aprendizaje."
+            &quot;ProGest simplifica la gestión operativa al instante, dotando a nuestra estructura base de visibilidad y gobernanza sobre el estado de cada iteración del proyecto sin curva de aprendizaje.&quot;
           </blockquote>
           <div className="mt-8 flex flex-col justify-center gap-1 text-sm font-medium">
             <span>Directorio de Operaciones</span>
