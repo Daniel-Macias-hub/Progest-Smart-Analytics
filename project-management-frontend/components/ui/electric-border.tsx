@@ -3,6 +3,8 @@
 import React, { useId } from "react"
 import { cn } from "@/lib/utils"
 
+
+
 interface ElectricBorderProps {
   children: React.ReactNode
   className?: string
@@ -23,103 +25,6 @@ export function ElectricBorder({
 
   return (
     <div className={cn("relative inline-flex items-center justify-center pt-1 px-1", className)}>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        :root {
-          --eb-primary: var(--primary);
-          --eb-light: oklch(from var(--primary) l c h);
-          --eb-gradient: oklch(from var(--primary) 0.3 calc(c / 2) h / 0.4);
-        }
-
-        .eb-card-container {
-          padding: 1px;
-          border-radius: 9999px; /* Forçado para badges redondos */
-          position: relative;
-          background: linear-gradient(
-              -30deg,
-              var(--eb-gradient),
-              transparent,
-              var(--eb-gradient)
-            ),
-            linear-gradient(
-              to bottom,
-              var(--background),
-              var(--background)
-            );
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .eb-inner-container {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .eb-border-outer {
-          border: 1px solid color-mix(in srgb, var(--eb-primary) 50%, transparent);
-          border-radius: 9999px;
-          padding: 1px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .eb-main-effect {
-          position: absolute;
-          inset: -2px;
-          border-radius: inherit;
-          border: 2px solid var(--eb-primary);
-          filter: url(#turbulent-displace-${id});
-          pointer-events: none;
-          z-index: 2;
-        }
-
-        .eb-glow-1 {
-          border: 1px solid color-mix(in srgb, var(--eb-primary) 60%, transparent);
-          border-radius: inherit;
-          position: absolute;
-          inset: 0;
-          filter: blur(1px);
-          pointer-events: none;
-        }
-
-        .eb-glow-2 {
-          border: 1px solid var(--eb-light);
-          border-radius: inherit;
-          position: absolute;
-          inset: 0;
-          filter: blur(4px);
-          pointer-events: none;
-        }
-
-        .eb-overlay-1 {
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          opacity: 0.8;
-          mix-blend-mode: overlay;
-          transform: scale(1.1);
-          filter: blur(8px);
-          background: linear-gradient(-30deg, white, transparent 30%, transparent 70%, white);
-          pointer-events: none;
-        }
-
-        .eb-background-glow {
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          filter: blur(16px);
-          transform: scale(1.15);
-          opacity: 0.25;
-          z-index: -1;
-          background: linear-gradient(-30deg, var(--eb-light), transparent, var(--eb-primary));
-          pointer-events: none;
-        }
-      `}} />
-
       {/* ── Filtro SVG (Definición Global Única por ID) ── */}
       <svg width="0" height="0" className="absolute pointer-events-none opacity-0">
         <defs>
@@ -156,7 +61,7 @@ export function ElectricBorder({
       <div className={cn("eb-card-container", className)}>
         <div className="eb-inner-container">
           <div className="eb-border-outer">
-            <div className="eb-main-effect" />
+            <div className="eb-main-effect" style={{ filter: `url(#turbulent-displace-${id})` }} />
             <div className="eb-glow-1" />
             <div className="eb-glow-2" />
             <div className="eb-overlay-1" />
