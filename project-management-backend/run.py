@@ -336,14 +336,14 @@ if __name__ == '__main__':
         try:
             # Verificar conexión a la base de datos
             db.session.execute(text('SELECT 1'))
-            print('✓ Conexión exitosa a PostgreSQL')
+            print('[OK] Conexion exitosa a PostgreSQL')
             
             # Crear todas las tablas
             print('\nCreando tablas en la base de datos...')
             db.create_all()
             ensure_user_schema()
             ensure_project_schema()
-            print('✓ Tablas creadas exitosamente\n')
+            print('[OK] Tablas creadas exitosamente\n')
             
             # Mostrar tablas creadas
             print('Tablas creadas:')
@@ -359,6 +359,6 @@ if __name__ == '__main__':
             print('  - team_messages\n')
             
         except Exception as e:
-            print(f'✗ Error: {e}')
+            print(f'[ERROR] {e}')
     
     app.run(debug=True, port=5000)
