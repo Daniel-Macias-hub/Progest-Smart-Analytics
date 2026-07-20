@@ -45,10 +45,12 @@ class TaskCreateSchema(Schema):
     def validate_due_date(self, value):
         """Validar que la fecha de vencimiento sea futura"""
         if value:
-            # Obtener fecha actual sin hora
-            now = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            # Normalizar value a naive UTC para comparación consistente
+            value_naive = value.replace(tzinfo=None) if value.tzinfo else value
+            # Obtener fecha actual sin hora (naive)
+            now = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
             # Convertir value a fecha sin hora
-            due_date = value.replace(hour=0, minute=0, second=0, microsecond=0)
+            due_date = value_naive.replace(hour=0, minute=0, second=0, microsecond=0)
             
             if due_date <= now:
                 raise ValidationError('La fecha de vencimiento debe ser posterior a hoy')
@@ -58,8 +60,11 @@ class TaskCreateSchema(Schema):
         start_date = data.get('start_date')
         due_date = data.get('due_date')
         if start_date and due_date:
-            start = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            due = due_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Normalizar a naive UTC
+            sd = start_date.replace(tzinfo=None) if start_date.tzinfo else start_date
+            dd = due_date.replace(tzinfo=None) if due_date.tzinfo else due_date
+            start = sd.replace(hour=0, minute=0, second=0, microsecond=0)
+            due = dd.replace(hour=0, minute=0, second=0, microsecond=0)
             if start > due:
                 raise ValidationError({'start_date': ['La fecha de inicio no puede ser posterior a la fecha de vencimiento']})
 
@@ -86,10 +91,12 @@ class TaskUpdateSchema(Schema):
     def validate_due_date(self, value):
         """Validar que la fecha de vencimiento sea futura"""
         if value:
-            # Obtener fecha actual sin hora
-            now = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            # Normalizar value a naive UTC para comparación consistente
+            value_naive = value.replace(tzinfo=None) if value.tzinfo else value
+            # Obtener fecha actual sin hora (naive)
+            now = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
             # Convertir value a fecha sin hora
-            due_date = value.replace(hour=0, minute=0, second=0, microsecond=0)
+            due_date = value_naive.replace(hour=0, minute=0, second=0, microsecond=0)
             
             if due_date <= now:
                 raise ValidationError('La fecha de vencimiento debe ser posterior a hoy')
@@ -99,8 +106,11 @@ class TaskUpdateSchema(Schema):
         start_date = data.get('start_date')
         due_date = data.get('due_date')
         if start_date and due_date:
-            start = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            due = due_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Normalizar a naive UTC
+            sd = start_date.replace(tzinfo=None) if start_date.tzinfo else start_date
+            dd = due_date.replace(tzinfo=None) if due_date.tzinfo else due_date
+            start = sd.replace(hour=0, minute=0, second=0, microsecond=0)
+            due = dd.replace(hour=0, minute=0, second=0, microsecond=0)
             if start > due:
                 raise ValidationError({'start_date': ['La fecha de inicio no puede ser posterior a la fecha de vencimiento']})
 

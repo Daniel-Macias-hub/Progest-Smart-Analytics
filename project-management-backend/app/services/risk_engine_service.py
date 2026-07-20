@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app import db
 from app.models import Task, TaskStateHistory, User
 
@@ -55,7 +55,9 @@ class SmartRiskEngineService:
         is_overdue = False
 
         if has_due_date:
-            time_remaining = task.due_date - now
+            # Normalizar due_date a naive UTC para comparación consistente
+            due_date_naive = task.due_date.replace(tzinfo=None) if task.due_date.tzinfo else task.due_date
+            time_remaining = due_date_naive - now
             is_overdue = time_remaining.total_seconds() < 0
             
             if is_overdue:
@@ -93,7 +95,8 @@ class SmartRiskEngineService:
                 
                 # Si falta menos de 48 horas y tiene menos del 50% completado
                 if has_due_date and not is_overdue:
-                    hours_left = (task.due_date - now).total_seconds() / 3600.0
+                    due_date_n = task.due_date.replace(tzinfo=None) if task.due_date.tzinfo else task.due_date
+                    hours_left = (due_date_n - now).total_seconds() / 3600.0
                     if hours_left <= 48 and completion_rate < 0.50:
                         risk_factors['low_checklist_velocity'] = True
                         delay_probability += 0.25
@@ -106,7 +109,8 @@ class SmartRiskEngineService:
                     delay_probability += 0.10
         elif task.status != 'done' and has_due_date and not is_overdue:
             # Si no tiene checklist, pero está en pending/in_progress sin avance explícito
-            hours_left = (task.due_date - now).total_seconds() / 3600.0
+            due_date_n2 = task.due_date.replace(tzinfo=None) if task.due_date.tzinfo else task.due_date
+            hours_left = (due_date_n2 - now).total_seconds() / 3600.0
             if hours_left <= 24 and task.status == 'pending':
                 risk_factors['unstarted_critical_task'] = True
                 delay_probability += 0.40
@@ -134,7 +138,9 @@ class SmartRiskEngineService:
         # Buscar la última transición de estado
         last_history = TaskStateHistory.query.filter_by(task_id=task.id).order_by(TaskStateHistory.changed_at.desc()).first()
         if last_history:
-            days_in_current_state = (now - last_history.changed_at).days
+            # Normalizar changed_at a naive si tiene tzinfo
+            changed_at_naive = last_history.changed_at.replace(tzinfo=None) if last_history.changed_at.tzinfo else last_history.changed_at
+            days_in_current_state = (now - changed_at_naive).days
             # Si lleva más de 5 días en in_progress o blocked
             if task.status in ['in_progress', 'blocked'] and days_in_current_state >= 5:
                 risk_factors['status_stagnation'] = True
@@ -144,7 +150,9 @@ class SmartRiskEngineService:
                     delay_probability += 0.10
         else:
             # Si no hay historial, usar la fecha de actualización o creación
-            days_since_update = (now - (task.updated_at or task.created_at)).days
+            base_date = task.updated_at or task.created_at
+            base_date_naive = base_date.replace(tzinfo=None) if base_date.tzinfo else base_date
+            days_since_update = (now - base_date_naive).days
             if task.status in ['in_progress', 'blocked'] and days_since_update >= 5:
                 risk_factors['status_stagnation'] = True
                 delay_probability += 0.15

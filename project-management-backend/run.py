@@ -55,26 +55,49 @@ from app.models import User, Project, Membership, Task, Sprint, Invite, Notifica
 # Importar rutas
 from app.routes import auth_bp, projects_bp, invites_bp, members_bp, tasks_bp, sprints_bp, notifications_bp, comments_bp, admin_bp, team_chat_bp
 
+def _get_existing_columns(table_name: str) -> set:
+    """
+    Obtiene las columnas existentes de una tabla de forma compatible con SQLite y PostgreSQL.
+    """
+    engine = db.engine
+    dialect = engine.dialect.name  # 'sqlite' o 'postgresql'
+
+    if dialect == 'sqlite':
+        rows = db.session.execute(text(f"PRAGMA table_info({table_name})")).fetchall()
+        return {row[1] for row in rows}  # columna 'name' está en índice 1
+    else:
+        rows = db.session.execute(text("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = :table_name
+        """), {'table_name': table_name}).fetchall()
+        return {row[0] for row in rows}
+
+
+def _column_type_alter(dialect: str, table: str, col_def: str) -> str:
+    """Genera la sentencia ALTER TABLE compatible con el dialecto."""
+    if dialect == 'sqlite':
+        return f"ALTER TABLE {table} ADD COLUMN {col_def}"
+    else:
+        return f"ALTER TABLE {table} ADD COLUMN {col_def}"
+
+
 def ensure_user_schema():
-    columns = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'users'
-    """)).fetchall()
-    existing = {row[0] for row in columns}
-    
+    engine = db.engine
+    dialect = engine.dialect.name
+    existing = _get_existing_columns('users')
+
     if 'preferred_theme' not in existing:
         db.session.execute(text("ALTER TABLE users ADD COLUMN preferred_theme VARCHAR(50) DEFAULT 'barney'"))
         db.session.commit()
 
+
 def ensure_project_schema():
-    columns = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'projects'
-    """)).fetchall()
-    existing = {row[0] for row in columns}
-    
+    engine = db.engine
+    dialect = engine.dialect.name
+
+    # --- Columnas de projects ---
+    existing = _get_existing_columns('projects')
     alters = []
     if 'timezone' not in existing:
         alters.append("ADD COLUMN timezone VARCHAR(64) NOT NULL DEFAULT 'America/Mexico_City'")
@@ -88,73 +111,81 @@ def ensure_project_schema():
         alters.append("ADD COLUMN sprint_enabled BOOLEAN NOT NULL DEFAULT TRUE")
     if 'sprint_length_days' not in existing:
         alters.append("ADD COLUMN sprint_length_days INTEGER NOT NULL DEFAULT 14")
-    
+
     if alters:
-        db.session.execute(text(f"ALTER TABLE projects {', '.join(alters)}"))
+        if dialect == 'sqlite':
+            # SQLite no soporta múltiples ADD COLUMN en un solo ALTER, hacerlos uno por uno
+            for alter in alters:
+                db.session.execute(text(f"ALTER TABLE projects {alter}"))
+        else:
+            db.session.execute(text(f"ALTER TABLE projects {', '.join(alters)}"))
         db.session.commit()
 
-    task_columns = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'tasks'
-    """)).fetchall()
-    task_existing = {row[0] for row in task_columns}
-
+    # --- Columnas de tasks ---
+    task_existing = _get_existing_columns('tasks')
     task_alters = []
     if 'sprint_id' not in task_existing:
         task_alters.append("ADD COLUMN sprint_id VARCHAR(36) NULL")
 
     if task_alters:
-        db.session.execute(text(f"ALTER TABLE tasks {', '.join(task_alters)}"))
+        if dialect == 'sqlite':
+            for alter in task_alters:
+                db.session.execute(text(f"ALTER TABLE tasks {alter}"))
+        else:
+            db.session.execute(text(f"ALTER TABLE tasks {', '.join(task_alters)}"))
         db.session.commit()
 
-    sprint_columns = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'sprints'
-    """)).fetchall()
-    sprint_existing = {row[0] for row in sprint_columns}
-
+    # --- Columnas de sprints ---
+    sprint_existing = _get_existing_columns('sprints')
     sprint_alters = []
     if 'color' not in sprint_existing:
         sprint_alters.append("ADD COLUMN color VARCHAR(32) NOT NULL DEFAULT 'blue'")
 
     if sprint_alters:
-        db.session.execute(text(f"ALTER TABLE sprints {', '.join(sprint_alters)}"))
+        if dialect == 'sqlite':
+            for alter in sprint_alters:
+                db.session.execute(text(f"ALTER TABLE sprints {alter}"))
+        else:
+            db.session.execute(text(f"ALTER TABLE sprints {', '.join(sprint_alters)}"))
         db.session.commit()
 
-    db.session.execute(text("""
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_status') THEN
-            IF NOT EXISTS (
-              SELECT 1
-              FROM pg_enum e
-              JOIN pg_type t ON t.oid = e.enumtypid
-              WHERE t.typname = 'task_status' AND e.enumlabel = 'in_review'
-            ) THEN
-              ALTER TYPE task_status ADD VALUE 'in_review';
-            END IF;
-          END IF;
-        END $$;
-    """))
-    db.session.commit()
-
-    team_message_columns = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'team_messages'
-    """)).fetchall()
-    team_message_existing = {row[0] for row in team_message_columns}
-
-    team_message_alters = []
-    if 'task_id' not in team_message_existing:
-        team_message_alters.append("ADD COLUMN task_id VARCHAR(36) NULL REFERENCES tasks(id) ON DELETE SET NULL")
-
-    if team_message_alters:
-        db.session.execute(text(f"ALTER TABLE team_messages {', '.join(team_message_alters)}"))
+    # --- Enum de PostgreSQL únicamente ---
+    if dialect == 'postgresql':
+        db.session.execute(text("""
+            DO $$
+            BEGIN
+              IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'task_status') THEN
+                IF NOT EXISTS (
+                  SELECT 1
+                  FROM pg_enum e
+                  JOIN pg_type t ON t.oid = e.enumtypid
+                  WHERE t.typname = 'task_status' AND e.enumlabel = 'in_review'
+                ) THEN
+                  ALTER TYPE task_status ADD VALUE 'in_review';
+                END IF;
+              END IF;
+            END $$;
+        """))
         db.session.commit()
 
+    # --- Columnas de team_messages ---
+    team_existing = _get_existing_columns('team_messages')
+    team_alters = []
+    if 'task_id' not in team_existing:
+        if dialect == 'sqlite':
+            team_alters.append("ADD COLUMN task_id VARCHAR(36) NULL")
+        else:
+            team_alters.append("ADD COLUMN task_id VARCHAR(36) NULL REFERENCES tasks(id) ON DELETE SET NULL")
+
+    if team_alters:
+        if dialect == 'sqlite':
+            for alter in team_alters:
+                db.session.execute(text(f"ALTER TABLE team_messages {alter}"))
+        else:
+            db.session.execute(text(f"ALTER TABLE team_messages {', '.join(team_alters)}"))
+        db.session.commit()
+
+    # --- Migrar avatares legacy ---
     bottts = {
         'Astra': 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Astra&size=64&radius=12',
         'Bolt': 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Bolt&size=64&radius=12',
@@ -175,6 +206,7 @@ def ensure_project_schema():
     for old, new in legacy_map.items():
         db.session.execute(text("UPDATE users SET avatar = :new WHERE avatar = :old"), {'new': new, 'old': old})
     db.session.commit()
+
 
 # Registrar blueprints
 app.register_blueprint(auth_bp)
