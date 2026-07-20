@@ -9,7 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       attribute="data-theme" 
       defaultTheme="system" 
       enableSystem 
-      themes={["light", "dark", "barney", "slate", "candy", "firewatch", "citrus", "marsh", "frost"]}
+      themes={["light", "dark", "sunset", "sunrise", "barney", "slate", "candy", "firewatch", "citrus", "marsh", "frost"]}
       disableTransitionOnChange
     >
       {children}

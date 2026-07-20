@@ -93,6 +93,8 @@
   color: inherit;
   display: inline-block;
   padding: 0.25rem;
+  position: relative;
+  z-index: 1;
 }
 
 .progest-nav-link:is(:hover, :focus-visible):not([data-active="true"]) span {

@@ -135,7 +135,7 @@ export function InteractiveDotGrid({ className }: { className?: string }) {
   }, [])
 
   return (
-    <div className={`fixed inset-0 overflow-hidden -z-10 pointer-events-auto flex justify-center items-center ${className || ''}`}>
+    <div className={`fixed inset-0 overflow-hidden -z-10 pointer-events-none flex justify-center items-center ${className || ''}`}>
       <div 
         ref={containerRef} 
         className="dot-grid-container flex flex-col gap-6 sm:gap-8 opacity-[0.18] select-none"
