@@ -222,8 +222,11 @@ export default function OnboardingPage() {
   }
 
 
+  const [serverError, setServerError] = useState<string | null>(null)
+
   async function onFinish(data: FormData) {
     setLoading(true)
+    setServerError(null)
     try {
       // 1. Actualizar perfil (Avatar + Tema)
       const profileResult = await updateMeService({ 
@@ -232,7 +235,9 @@ export default function OnboardingPage() {
       })
       
       if (!profileResult.success) {
-        toast.error(profileResult.error || "No se pudo guardar tu perfil")
+        const errMsg = profileResult.error || "No se pudo guardar tu perfil"
+        setServerError(errMsg)
+        toast.error(errMsg)
         setLoading(false)
         return
       }
@@ -252,10 +257,13 @@ export default function OnboardingPage() {
       })
 
       if (!projectResult.success || !projectResult.project) {
-        toast.error(projectResult.error || "Error al crear el proyecto")
+        const errMsg = projectResult.error || "Error al crear el proyecto. Verifica que el nombre no esté duplicado."
+        setServerError(errMsg)
+        toast.error(errMsg)
         setLoading(false)
         return
       }
+
 
       const updatedSession = {
         ...session!,
@@ -429,6 +437,12 @@ export default function OnboardingPage() {
             </p>
           </div>
 
+          {serverError && (
+            <div className="rounded-lg border border-red-400/40 bg-red-950/60 p-3 text-xs text-red-200">
+              {serverError}
+            </div>
+          )}
+
           <div className="space-y-4 pt-4">
             {step === 1 && (
               <>
@@ -442,11 +456,14 @@ export default function OnboardingPage() {
                   {errors.name && <p className="text-xs text-red-200 mt-1">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white/90">Descripción</Label>
+                  <div className="flex justify-between items-center">
+                    <Label className="text-white/90">Descripción</Label>
+                    <span className="text-[10px] text-white/50">Mínimo 20 caracteres</span>
+                  </div>
                   <Textarea 
                     {...register("description")} 
                     className="input-glass min-h-[100px]" 
-                    placeholder="¿Cuál es el objetivo principal?"
+                    placeholder="¿Cuál es el objetivo principal de tu proyecto?"
                   />
                   {errors.description && <p className="text-xs text-red-200 mt-1">{errors.description.message}</p>}
                 </div>
