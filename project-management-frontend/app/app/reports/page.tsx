@@ -17,6 +17,7 @@ import { listSprints } from "@/services/sprintService"
 import { toast } from "sonner"
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts"
 import { Download, Loader2 } from "lucide-react"
+import { ReportsSkeleton } from "@/components/ui/module-skeletons"
 
 export default function ReportsPage() {
   const session = useAuthStore((s) => s.session)
@@ -32,9 +33,9 @@ export default function ReportsPage() {
       setLoading(true)
       try {
         const [t, m, sp] = await Promise.all([
-          fetchTasks(session.project.id),
-          listMembers(),
-          listSprints(),
+          fetchTasks(session.project.id).catch(() => []),
+          listMembers().catch(() => ({ success: false, members: [] })),
+          listSprints().catch(() => ({ success: false, sprints: [] })),
         ])
         setTasks(t)
         if (m.success && m.members) setMembers(m.members)
@@ -344,12 +345,8 @@ export default function ReportsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+  if (loading && tasks.length === 0) {
+    return <ReportsSkeleton message="Preparando reportes..." />
   }
 
   return (

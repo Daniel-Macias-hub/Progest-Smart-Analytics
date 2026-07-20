@@ -16,6 +16,8 @@ import { RiskBadge } from "@/components/ui/risk-badge"
 import { Progress } from "@/components/ui/progress"
 import "./animated-cards.css"
 
+import { DashboardSkeleton } from "@/components/ui/module-skeletons"
+
 export default function DashboardPage() {
   const router = useRouter()
   const session = useAuthStore((s) => s.session)
@@ -24,11 +26,12 @@ export default function DashboardPage() {
   const setTasks = useDataStore((s) => s.setTasks)
   const setMemberships = useDataStore((s) => s.setMemberships)
 
-  const [isLoading, setIsLoading] = useState(true)
-
   const projectId = session?.project?.id
   const projectTasks = useMemo(() => tasks.filter((t) => t.project_id === projectId), [tasks, projectId])
   const members = useMemo(() => memberships.filter((m) => m.project_id === projectId && m.status === "active"), [memberships, projectId])
+
+  // Si ya hay tareas en el store para este proyecto, mostrar de inmediato sin bloquear (<100ms)
+  const [isLoading, setIsLoading] = useState(() => projectTasks.length === 0)
 
   useEffect(() => {
     let isMounted = true
@@ -137,6 +140,10 @@ export default function DashboardPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  if (isLoading && projectTasks.length === 0) {
+    return <DashboardSkeleton message="Cargando Dashboard..." />
   }
 
   return (

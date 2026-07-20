@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "sonner"
+import { ProjectThemeProvider } from "@/components/providers/project-theme-provider"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -12,8 +13,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       themes={["light", "dark", "sunset", "sunrise", "barney", "slate", "candy", "firewatch", "citrus", "marsh", "frost"]}
       disableTransitionOnChange
     >
-      {children}
-      <Toaster position="top-right" richColors closeButton />
+      <ProjectThemeProvider>
+        {children}
+        <Toaster position="top-right" richColors closeButton />
+      </ProjectThemeProvider>
     </ThemeProvider>
   )
 }

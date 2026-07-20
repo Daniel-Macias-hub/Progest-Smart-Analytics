@@ -1,8 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
-import { useTheme } from "next-themes"
-import { useAuthStore } from "@/stores/authStore"
 import { AppSidebar } from "./app-sidebar"
 import { Topbar } from "./topbar"
 import { RoleGate } from "./role-gate"
@@ -16,16 +13,6 @@ interface PrivateLayoutProps {
 }
 
 export function PrivateLayout({ children, role, currentPath }: PrivateLayoutProps) {
-  const { theme, setTheme } = useTheme()
-  const session = useAuthStore((s) => s.session)
-  const preferredTheme = session?.user?.preferred_theme || session?.project?.preferred_theme
-
-  useEffect(() => {
-    if (preferredTheme && theme !== preferredTheme) {
-      setTheme(preferredTheme)
-    }
-  }, [preferredTheme, theme, setTheme])
-
   const isOnboarding = currentPath === "/onboarding" || currentPath === "/work/no-project"
 
   if (isOnboarding) {
@@ -55,4 +42,3 @@ export function PrivateLayout({ children, role, currentPath }: PrivateLayoutProp
     </RoleGate>
   )
 }
-

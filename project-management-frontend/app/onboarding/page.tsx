@@ -123,6 +123,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [isRotating, setIsRotating] = useState(false)
   const [activeTheme, setActiveTheme] = useState("barney")
+  const [serverError, setServerError] = useState<string | null>(null)
 
   const { register, handleSubmit, setValue, setError, watch, clearErrors, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -220,9 +221,6 @@ export default function OnboardingPage() {
     setTimeout(() => setStep(nextStep), 600)
     setTimeout(() => setIsRotating(false), 1200)
   }
-
-
-  const [serverError, setServerError] = useState<string | null>(null)
 
   async function onFinish(data: FormData) {
     setLoading(true)

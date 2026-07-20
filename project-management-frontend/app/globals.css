@@ -55,6 +55,73 @@
   --admin-light-orange: #FFE0D3;
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   Identidades Visuales del Proyecto (7 Temas)
+   Capa de acento independiente sobre Light / Dark Mode
+   ───────────────────────────────────────────────────────────────── */
+[data-project-theme="barney"] {
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --ring: #8b5cf6;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-ring: #8b5cf6;
+  --admin-blue: #8b5cf6;
+}
+
+[data-project-theme="firewatch"] {
+  --primary: #ea580c;
+  --primary-foreground: #ffffff;
+  --ring: #ea580c;
+  --sidebar-primary: #ea580c;
+  --sidebar-ring: #ea580c;
+  --admin-blue: #ea580c;
+}
+
+[data-project-theme="citrus"] {
+  --primary: #65a30d;
+  --primary-foreground: #ffffff;
+  --ring: #65a30d;
+  --sidebar-primary: #65a30d;
+  --sidebar-ring: #65a30d;
+  --admin-blue: #65a30d;
+}
+
+[data-project-theme="marsh"] {
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --ring: #059669;
+  --sidebar-primary: #059669;
+  --sidebar-ring: #059669;
+  --admin-blue: #059669;
+}
+
+[data-project-theme="frost"] {
+  --primary: #0284c7;
+  --primary-foreground: #ffffff;
+  --ring: #0284c7;
+  --sidebar-primary: #0284c7;
+  --sidebar-ring: #0284c7;
+  --admin-blue: #0284c7;
+}
+
+[data-project-theme="slate"] {
+  --primary: #475569;
+  --primary-foreground: #ffffff;
+  --ring: #475569;
+  --sidebar-primary: #475569;
+  --sidebar-ring: #475569;
+  --admin-blue: #475569;
+}
+
+[data-project-theme="candy"] {
+  --primary: #db2777;
+  --primary-foreground: #ffffff;
+  --ring: #db2777;
+  --sidebar-primary: #db2777;
+  --sidebar-ring: #db2777;
+  --admin-blue: #db2777;
+}
+
 [data-theme="dark"] {
   --background: #101214;
   --foreground: #F8FAFC;

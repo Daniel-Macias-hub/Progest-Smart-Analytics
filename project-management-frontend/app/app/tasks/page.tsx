@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils"
 import { SPRINT_COLOR_CLASS } from "@/lib/sprintColors"
 import { normalizeAvatarUrl } from "@/lib/avatars"
 import { RiskBadge } from "@/components/ui/risk-badge"
+import { TasksSkeleton } from "@/components/ui/module-skeletons"
 
 export default function TasksPage() {
   const session = useAuthStore((s) => s.session)
@@ -151,10 +152,10 @@ export default function TasksPage() {
     setLoading(true)
     try {
       const [settingsResult, tasksData, membersResult, sprintsResult] = await Promise.all([
-        getProjectSettingsService(),
-        fetchTasks(),
-        listMembers(),
-        listSprints(),
+        getProjectSettingsService().catch(() => ({ success: false, project: null })),
+        fetchTasks().catch(() => []),
+        listMembers().catch(() => ({ success: false, members: [] })),
+        listSprints().catch(() => ({ success: false, sprints: [] })),
       ])
 
       const enabled = settingsResult.success && settingsResult.project ? !!settingsResult.project.sprint_enabled : !!session?.project?.sprint_enabled
@@ -162,14 +163,13 @@ export default function TasksPage() {
         setProject(settingsResult.project as any)
       }
       setSprintEnabled(enabled)
+      setTasks(tasksData)
 
-      setTasks(tasksData || [])
-      
       if (membersResult.success && membersResult.members) {
         setMembers(membersResult.members)
       }
 
-      if (enabled && sprintsResult.success && sprintsResult.sprints) {
+      if (sprintsResult.success && sprintsResult.sprints) {
         setSprints(sprintsResult.sprints)
       } else {
         setSprints([])
@@ -710,6 +710,10 @@ export default function TasksPage() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
+  }
+
+  if (loading && tasks.length === 0) {
+    return <TasksSkeleton message="Obteniendo tareas..." />
   }
 
   return (
