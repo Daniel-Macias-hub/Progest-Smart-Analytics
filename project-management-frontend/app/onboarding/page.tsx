@@ -67,6 +67,22 @@ const themeOptions = [
   { id: "candy", label: "Candy" },
 ]
 
+const step1Schema = z.object({
+  name: z.string().trim().min(3, "El nombre debe tener al menos 3 caracteres").max(60, "Máximo 60 caracteres"),
+  description: z.string().trim().min(20, "Minimo 20 caracteres (describe tu proyecto)").max(800, "Máximo 800 caracteres"),
+})
+
+const step2Schema = z.object({
+  category: z.string().min(1, "Selecciona una categoria"),
+  otherCategory: z.string().trim().max(50).optional(),
+  timezone: z.string().trim().min(1, "Selecciona una zona horaria"),
+  state: z.string().trim().min(1, "Selecciona el estado"),
+}).superRefine((d, ctx) => {
+  if (d.category === "Otro" && (!d.otherCategory || d.otherCategory.trim().length < 2)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoria" })
+  }
+})
+
 const schema = z.object({
   name: z.string().trim().min(3, "El nombre debe tener al menos 3 caracteres").max(60, "Máximo 60 caracteres"),
   description: z.string().trim().min(20, "Minimo 20 caracteres").max(800, "Máximo 800 caracteres"),
@@ -95,7 +111,7 @@ export default function OnboardingPage() {
   const [isRotating, setIsRotating] = useState(false)
   const [activeTheme, setActiveTheme] = useState("barney")
 
-  const { register, handleSubmit, setValue, watch, trigger, clearErrors, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, setError, watch, clearErrors, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
@@ -152,15 +168,46 @@ export default function OnboardingPage() {
     )
   }
 
-  const rotateAndSetStep = async (nextStep: 1 | 2 | 3, fields: (keyof FormData)[]) => {
+  const rotateAndSetStep = async (nextStep: 1 | 2 | 3) => {
     clearErrors()
-    const ok = await trigger(fields)
-    if (!ok) return
+
+    if (step === 1) {
+      const result = step1Schema.safeParse({
+        name: watch("name"),
+        description: watch("description"),
+      })
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as keyof FormData
+          if (fieldName) {
+            setError(fieldName, { message: issue.message })
+          }
+        })
+        return
+      }
+    } else if (step === 2) {
+      const result = step2Schema.safeParse({
+        category: watch("category"),
+        otherCategory: watch("otherCategory"),
+        timezone: watch("timezone"),
+        state: watch("state"),
+      })
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as keyof FormData
+          if (fieldName) {
+            setError(fieldName, { message: issue.message })
+          }
+        })
+        return
+      }
+    }
     
     setIsRotating(true)
     setTimeout(() => setStep(nextStep), 600)
     setTimeout(() => setIsRotating(false), 1200)
   }
+
 
   async function onFinish(data: FormData) {
     setLoading(true)
@@ -390,7 +437,7 @@ export default function OnboardingPage() {
                   />
                   {errors.description && <p className="text-xs text-red-200 mt-1">{errors.description.message}</p>}
                 </div>
-                <button type="button" onClick={() => rotateAndSetStep(2, ["name", "description"])} className="btn-submit">
+                <button type="button" onClick={() => rotateAndSetStep(2)} className="btn-submit">
                   Siguiente <ArrowRight size={18} />
                 </button>
               </>
@@ -443,10 +490,11 @@ export default function OnboardingPage() {
                   <button type="button" onClick={() => setStep(1)} className="btn-submit bg-white/5">
                     <ArrowLeft size={18} />
                   </button>
-                  <button type="button" onClick={() => rotateAndSetStep(3, ["category", "timezone", "state"])} className="btn-submit flex-1">
+                  <button type="button" onClick={() => rotateAndSetStep(3)} className="btn-submit flex-1">
                     Siguiente <ArrowRight size={18} />
                   </button>
                 </div>
+
               </>
             )}
 
