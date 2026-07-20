@@ -68,38 +68,51 @@ const themeOptions = [
 ]
 
 const step1Schema = z.object({
-  name: z.string().trim().min(3, "El nombre debe tener al menos 3 caracteres").max(60, "Máximo 60 caracteres"),
-  description: z.string().trim().min(20, "Minimo 20 caracteres (describe tu proyecto)").max(800, "Máximo 800 caracteres"),
+  name: z.string({ required_error: "El nombre del proyecto es obligatorio" })
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres")
+    .max(60, "Máximo 60 caracteres"),
+  description: z.string({ required_error: "La descripción es obligatoria" })
+    .trim()
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(800, "Máximo 800 caracteres"),
 })
 
 const step2Schema = z.object({
-  category: z.string().min(1, "Selecciona una categoria"),
+  category: z.string({ required_error: "Selecciona una categoría" }).min(1, "Selecciona una categoría"),
   otherCategory: z.string().trim().max(50).optional(),
-  timezone: z.string().trim().min(1, "Selecciona una zona horaria"),
-  state: z.string().trim().min(1, "Selecciona el estado"),
+  timezone: z.string({ required_error: "Selecciona una zona horaria" }).trim().min(1, "Selecciona una zona horaria"),
+  state: z.string({ required_error: "Selecciona el estado" }).trim().min(1, "Selecciona el estado"),
 }).superRefine((d, ctx) => {
   if (d.category === "Otro" && (!d.otherCategory || d.otherCategory.trim().length < 2)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoria" })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoría" })
   }
 })
 
 const schema = z.object({
-  name: z.string().trim().min(3, "El nombre debe tener al menos 3 caracteres").max(60, "Máximo 60 caracteres"),
-  description: z.string().trim().min(20, "Minimo 20 caracteres").max(800, "Máximo 800 caracteres"),
-  category: z.string().min(1, "Selecciona una categoria"),
+  name: z.string({ required_error: "El nombre del proyecto es obligatorio" })
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres")
+    .max(60, "Máximo 60 caracteres"),
+  description: z.string({ required_error: "La descripción es obligatoria" })
+    .trim()
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(800, "Máximo 800 caracteres"),
+  category: z.string({ required_error: "Selecciona una categoría" }).min(1, "Selecciona una categoría"),
   otherCategory: z.string().trim().max(50).optional(),
-  timezone: z.string().trim().min(1, "Selecciona una zona horaria"),
-  state: z.string().trim().min(1, "Selecciona el estado"),
+  timezone: z.string({ required_error: "Selecciona una zona horaria" }).trim().min(1, "Selecciona una zona horaria"),
+  state: z.string({ required_error: "Selecciona el estado" }).trim().min(1, "Selecciona el estado"),
   tasks_retention_days: z.number().int().min(0).max(365),
   sprint_enabled: z.boolean(),
   sprint_length_days: z.number().int().min(7).max(30),
-  avatar: z.string().min(1, "Selecciona un avatar"),
+  avatar: z.string({ required_error: "Selecciona un avatar para tu perfil" }).min(1, "Selecciona un avatar"),
   preferred_theme: z.string().min(1),
 }).superRefine((d, ctx) => {
   if (d.category === "Otro" && (!d.otherCategory || d.otherCategory.trim().length < 2)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoria" })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoría" })
   }
 })
+
 
 type FormData = z.infer<typeof schema>
 
