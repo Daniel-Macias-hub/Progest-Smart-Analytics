@@ -81,35 +81,32 @@ export default function BoardPage() {
     setErrorMessage("")
 
     try {
-      const settingsResult = await getProjectSettingsService()
+      const [settingsResult, sprintsResult, tasksData, membersResponse] = await Promise.all([
+        getProjectSettingsService(),
+        listSprints(),
+        fetchTasks(projectId),
+        listMembers(),
+      ])
+
       if (settingsResult.success && settingsResult.project) {
         setProject(settingsResult.project as any)
       }
 
       const sprintEnabled = !!(settingsResult.success ? settingsResult.project?.sprint_enabled : session?.project?.sprint_enabled)
 
-      if (sprintEnabled) {
-        const sprintsResult = await listSprints()
-        if (sprintsResult.success && sprintsResult.sprints) {
-          setSprints(sprintsResult.sprints)
-          if (sprintFilter === "all") {
-            const active = sprintsResult.sprints.find((s) => s.status === "active")
-            if (active) setSprintFilter(active.id)
-          }
+      if (sprintEnabled && sprintsResult.success && sprintsResult.sprints) {
+        setSprints(sprintsResult.sprints)
+        if (sprintFilter === "all") {
+          const active = sprintsResult.sprints.find((s) => s.status === "active")
+          if (active) setSprintFilter(active.id)
         }
       } else {
         setSprints([])
         setSprintFilter("all")
       }
 
-      // Fetch tasks and members in parallel
-      const [tasksData, membersResponse] = await Promise.all([
-        fetchTasks(projectId),
-        listMembers()
-      ])
-
       // Update Zustand store with fetched data
-      setTasks(tasksData)
+      setTasks(tasksData || [])
       
       if (membersResponse.success && membersResponse.members) {
         setMembers(membersResponse.members)

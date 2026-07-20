@@ -150,28 +150,27 @@ export default function TasksPage() {
   async function loadData() {
     setLoading(true)
     try {
-      const settingsResult = await getProjectSettingsService()
+      const [settingsResult, tasksData, membersResult, sprintsResult] = await Promise.all([
+        getProjectSettingsService(),
+        fetchTasks(),
+        listMembers(),
+        listSprints(),
+      ])
+
       const enabled = settingsResult.success && settingsResult.project ? !!settingsResult.project.sprint_enabled : !!session?.project?.sprint_enabled
       if (settingsResult.success && settingsResult.project) {
         setProject(settingsResult.project as any)
       }
       setSprintEnabled(enabled)
 
-      const tasksData = await fetchTasks()
-      setTasks(tasksData)
+      setTasks(tasksData || [])
       
-      const membersResult = await listMembers()
       if (membersResult.success && membersResult.members) {
         setMembers(membersResult.members)
       }
 
-      if (enabled) {
-        const sprintsResult = await listSprints()
-        if (sprintsResult.success && sprintsResult.sprints) {
-          setSprints(sprintsResult.sprints)
-        } else {
-          setSprints([])
-        }
+      if (enabled && sprintsResult.success && sprintsResult.sprints) {
+        setSprints(sprintsResult.sprints)
       } else {
         setSprints([])
       }
