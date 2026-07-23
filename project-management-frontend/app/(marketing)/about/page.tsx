@@ -47,7 +47,7 @@ export default function AboutPage() {
           <ElectricBorder>
             <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
               <Heart className="h-3.5 w-3.5" />
-              Hecho con propósito en Latinoamérica
+              Hecho con propósitos educativos para la materia de Microprocesadores.
             </span>
           </ElectricBorder>
         </motion.div>

@@ -20,8 +20,8 @@ import { listMembers } from "@/services/memberService"
 import { toast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function WorkTaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function WorkTaskDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params
   const session = useAuthStore((s) => s.session)
   const currentUser = session?.user
 

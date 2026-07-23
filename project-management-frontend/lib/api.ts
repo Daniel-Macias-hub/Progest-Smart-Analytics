@@ -1,4 +1,12 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:5000/api`
+  }
+  return "http://localhost:5000/api"
+}
+
+const API_URL = getApiUrl()
 
 interface ApiResponse<T> {
   success: boolean
@@ -26,7 +34,7 @@ async function refreshAccessToken(): Promise<string | null> {
     const refreshToken = localStorage.getItem('refresh_token')
     if (!refreshToken) return null
 
-    const response = await fetch(`${API_URL}/auth/refresh`, {
+    const response = await fetch(`${getApiUrl()}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,7 +94,7 @@ async function apiClient<T>(
   }
   
   // 3. Hacer peticion
-  let response = await fetch(`${API_URL}${endpoint}`, {
+  let response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
     headers,
   })

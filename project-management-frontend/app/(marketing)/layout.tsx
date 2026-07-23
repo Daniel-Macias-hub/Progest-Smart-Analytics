@@ -134,10 +134,10 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           {/* Copyright */}
           <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-6 sm:flex-row">
             <p className="text-sm font-semibold text-foreground/70">
-              © 2026 ProGest. Todos los derechos reservados por el Equipo 1.
+              © 2026 ProGest. Todos los derechos reservados por MÍ (JDMM).
             </p>
             <div className="flex gap-4 text-sm font-medium text-foreground/55">
-              <span>Hecho con ♥ Para la materia de Implantación y Mantenimiento de Sistemas</span>
+              <span>Hecho con ♥ Para la materia DUAL de Microprocesadores</span>
               <span>·</span>
               <span>v1.0.0 — MVP</span>
             </div>

@@ -57,3 +57,6 @@ playwright-tests/test-results/
 frontend_err.txt
 frontend_out.txt
 test-results/
+*.db
+instance/
+

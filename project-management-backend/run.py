@@ -30,13 +30,7 @@ migrate.init_app(app, db)
 jwt = JWTManager(app)
 
 # CORS
-allowed_origins = [
-    os.getenv('FRONTEND_URL', 'http://localhost:3000'),
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001'
-]
-CORS(app, origins=allowed_origins)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # Middleware para logging de requests
 @app.before_request
@@ -53,7 +47,8 @@ def log_request():
 from app.models import User, Project, Membership, Task, Sprint, Invite, Notification, Comment, AuditLog, TeamMessage, TaskStateHistory
 
 # Importar rutas
-from app.routes import auth_bp, projects_bp, invites_bp, members_bp, tasks_bp, sprints_bp, notifications_bp, comments_bp, admin_bp, team_chat_bp
+from app.routes import auth_bp, projects_bp, invites_bp, members_bp, tasks_bp, sprints_bp, notifications_bp, comments_bp, admin_bp, team_chat_bp, telemetry_bp
+
 
 def _get_existing_columns(table_name: str) -> set:
     """
@@ -219,6 +214,8 @@ app.register_blueprint(notifications_bp)
 app.register_blueprint(comments_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(team_chat_bp)
+app.register_blueprint(telemetry_bp)
+
 
 # JWT Callbacks
 @jwt.expired_token_loader
@@ -393,4 +390,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(f'[ERROR] {e}')
     
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

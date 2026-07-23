@@ -17,7 +17,7 @@ import {
   BarChart3, Users, Shield, ArrowRight, Target, TrendingUp, Clock, Layers
 } from "lucide-react"
 
-  // features list moved to InteractiveLayoutGrid
+// features list moved to InteractiveLayoutGrid
 
 const capabilities = [
   {
@@ -109,7 +109,7 @@ export default function LandingPage() {
               <ElectricBorder>
                 <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
                   <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                  Plataforma 100% Disponible
+                  Trabajo realizado por  Jesus Daniel Macias Matus
                 </span>
               </ElectricBorder>
             </FadeInItem>
@@ -117,7 +117,7 @@ export default function LandingPage() {
             <div className="w-full max-w-5xl text-primary">
               <AnimeTextDraw
                 className="w-full"
-                text="La plataforma completa para gestionar proyectos"
+                text="La plataforma completa, ideal y perfecta para gestionar proyectos"
                 fontSize={68}
                 strokeWidth={1.5}
                 viewBoxHeight={220}
@@ -127,7 +127,7 @@ export default function LandingPage() {
             </div>
             <FadeInItem>
               <p className="max-w-[42rem] text-pretty text-lg leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-                Organiza tareas, coordina equipos y mide resultados desde un solo lugar. 
+                Organiza tareas, coordina equipos y mide resultados desde un solo lugar.
                 ProGest es la herramienta todo-en-uno diseñada para equipos empresariales que exigen control total y trazabilidad.
               </p>
             </FadeInItem>
@@ -144,7 +144,7 @@ export default function LandingPage() {
               </Link>
             </FadeInItem>
             <FadeInItem>
-              <p className="text-xs text-muted-foreground mt-4">Sin tarjeta de crédito. Aprovisionamiento al instante.</p>
+              <p className="text-xs text-muted-foreground mt-4">Aprovisionamiento al instante.</p>
             </FadeInItem>
           </div>
         </div>
@@ -166,10 +166,10 @@ export default function LandingPage() {
       <section className="border-b bg-muted/20">
         <div className="mx-auto max-w-[64rem] px-4 py-16 md:py-24">
           <FadeIn className="flex flex-col gap-4 text-center mb-12">
-            <AnimeText 
-              as="h2" 
+            <AnimeText
+              as="h2"
               className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-              text="Diseño enfocado en la productividad" 
+              text="Diseño enfocado en la productividad"
             />
             <p className="mx-auto max-w-[42rem] text-muted-foreground sm:text-lg">
               Una interfaz minimalista y robusta donde la información que importa siempre está al frente.
@@ -220,10 +220,10 @@ export default function LandingPage() {
       <section className="border-t bg-muted/10">
         <div className="mx-auto max-w-[64rem] px-4 py-16 md:py-24">
           <FadeIn className="flex flex-col items-center gap-4 text-center mb-16">
-            <AnimeText 
-              as="h2" 
+            <AnimeText
+              as="h2"
               className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
-              text="Flujo de integración" 
+              text="Flujo de integración"
             />
           </FadeIn>
           <FadeInStagger className="grid gap-8 md:grid-cols-4">
@@ -244,10 +244,10 @@ export default function LandingPage() {
       <section className="border-t bg-background">
         <div className="mx-auto max-w-[64rem] px-4 py-16 md:py-24">
           <FadeIn className="mb-12 text-center md:text-left">
-            <AnimeText 
-              as="h2" 
+            <AnimeText
+              as="h2"
               className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4"
-              text="Despliegue escalable" 
+              text="Despliegue escalable"
             />
             <p className="mx-auto max-w-[42rem] md:mx-0 text-muted-foreground sm:text-lg">
               Soporte para jerarquías de equipo, vistas analíticas transversales e inicio inmediato. No limits.
