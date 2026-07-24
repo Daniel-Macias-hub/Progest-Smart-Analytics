@@ -64,11 +64,11 @@
 
 La gestión eficiente de proyectos de software depende críticamente de la capacidad para identificar oportunamente los factores de riesgo que provocan retrasos en el cronograma de actividades (Pressman & Maxim, 2020). En la mayoría de las plataformas tradicionales de administración de proyectos (como tableros Kanban o diagramas de Gantt estáticos), las desviaciones únicamente se detectan cuando la fecha límite ha expirado, lo que limita la capacidad de reacción proactiva de los responsables del proyecto e incrementa los costos operativos.
 
-El presente trabajo describe el desarrollo e implementación de ProGest Smart Analytics, una plataforma web para la gestión de proyectos que incorpora un motor predictivo denominado Smart Risk Engine. Este motor evalúa continuamente cuatro variables operativas clave en el módulo fuente app/services/risk_engine_service.py: la proximidad a la fecha límite ($F_{deadline}$), el porcentaje de avance de las listas de verificación ($F_{checklist}$), la sobrecarga de trabajo del desarrollador asignado ($F_{overload}$) y el tiempo de estancamiento en el flujo de trabajo ($F_{stagnation}$).
+El presente trabajo describe el desarrollo e implementación de ProGest Smart Analytics, una plataforma web para la gestión de proyectos que incorpora un motor predictivo denominado Smart Risk Engine. Este motor evalúa continuamente cuatro variables operativas clave en el módulo fuente app/services/risk_engine_service.py: la proximidad a la fecha límite (F_deadline), el porcentaje de avance de las listas de verificación (F_checklist), la sobrecarga de trabajo del desarrollador asignado (F_overload) y el tiempo de estancamiento en el flujo de trabajo (F_stagnation).
 
 Desarrollado mediante una arquitectura de servicios desacoplada compuesta por un frontend en Next.js 14 (Vercel, 2024), un backend en Flask 3.0 (Pallets, 2024) y una base de datos relacional (PostgreSQL / SQLite), el sistema integra un módulo de telemetría operativa que registra automáticamente cada transición de estado en la entidad TaskStateHistory.
 
-Mediante auditorías funcionales, pruebas de humo E2E y un análisis estadístico cuantitativo sobre una muestra real de n = 67 tareas en base de datos distribuidas en 11 proyectos activos, se evaluó la efectividad del sistema, obteniendo una probabilidad promedio de retraso global de mu = 0.2410 (sigma = 0.3474) y logrando la detección anticipada de las tareas clasificadas en riesgo alto antes de su vencimiento, aportando evidencia empírica para la validación de la hipótesis de investigación.
+Mediante auditorías funcionales, pruebas de humo E2E y un análisis estadístico cuantitativo sobre una muestra real de n = 67 tareas en base de datos distribuidas en 11 proyectos activos, se evaluó la efectividad del sistema, obteniendo una probabilidad promedio de retraso global de μ = 0.2410 (σ = 0.3474) y logrando la detección anticipada de las tareas clasificadas en riesgo alto antes de su vencimiento, aportando evidencia empírica para la validación de la hipótesis de investigación.
 
 ---
 
@@ -116,7 +116,7 @@ Desarrollar e implementar un sistema inteligente para la gestión de proyectos s
 
 ### 5.2 Objetivos Específicos
 1. Diseñar una arquitectura de software desacoplada compuesta por un frontend responsivo en Next.js 14 y un backend REST API en Flask 3.0 con soporte para persistencia relacional en PostgreSQL / SQLite.
-2. Formular e implementar el Smart Risk Engine, un algoritmo de evaluación heurística que calcule la probabilidad de retraso $P(delay_i)$ y genere explicaciones causales en la UI.
+2. Formular e implementar el Smart Risk Engine, un algoritmo de evaluación heurística que calcule la probabilidad de retraso P(delay_i) y genere explicaciones causales en la UI.
 3. Instrumentar el modelo de datos mediante el patrón de telemetría TaskStateHistory para registrar de forma automática cada cambio de estado, timestamp y responsable.
 4. Ejecutar auditorías de calidad de software y pruebas de consistencia cruzada E2E entre la interfaz de usuario, los endpoints de la API y la base de datos relacional para garantizar coincidencia de datos multi-vista.
 5. Realizar un análisis estadístico cuantitativo (descriptivo e inferencial) sobre los datos de telemetría para evaluar el cumplimiento de la hipótesis de investigación.
@@ -130,18 +130,18 @@ De acuerdo con los criterios de evaluación del Proyecto Integrador Dual, se est
 
 > "Si se implementa un sistema inteligente de detección temprana de riesgo basado en el análisis automático de variables operativas de las tareas, entonces será posible reducir al menos un 25% la cantidad de tareas entregadas fuera del tiempo establecido en comparación con una gestión tradicional sin alertas predictivas."
 
-### 6.2 Variable Independiente ($X$)
+### 6.2 Variable Independiente (X)
 * Definición: Implementación del módulo Smart Risk Engine (app/services/risk_engine_service.py) e instrumentación de alertas predictivas en la interfaz de usuario.
 * Escala de Medición: Dicotómica (Presente / Ausente).
 
-### 6.3 Variable Dependiente ($Y$)
+### 6.3 Variable Dependiente (Y)
 * Definición: Porcentaje de tareas entregadas fuera del tiempo establecido (Tasa de Tareas Retrasadas).
 * Escala de Medición: Continua (Porcentaje de 0.0% a 100.0%).
 
 ### 6.4 Métrica Principal de Evaluación (TTFP)
 La evaluación cuantitativa se realiza mediante la tasa de tareas entregadas fuera de plazo (TTFP):
 
-$$TTFP = \left( \frac{\text{Tareas Retrasadas}}{\text{Total de Tareas}} \right) \times 100$$
+TTFP = (Tareas Retrasadas / Total de Tareas) * 100
 
 ---
 
@@ -249,27 +249,27 @@ El Smart Risk Engine aborda la limitación de las herramientas tradicionales de 
 ### 8.2 Heurística Algorítmica e Incrementos Condicionales
 El algoritmo implementado en app/services/risk_engine_service.py evalúa de forma aditiva cuatro reglas de decisión:
 
-1. Evaluación de Fecha Límite ($due\_date$):
-   * Tarea vencida: $delay\_probability = 1.0$, factor overdue.
-   * Horas restantes <= 24: +0.60 a $delay\_probability$ (due_date_proximity_critical).
-   * Horas restantes <= 72: +0.35 a $delay\_probability$ (due_date_proximity_warning).
-   * Horas restantes <= 168 (1 semana): +0.15 a $delay\_probability$ (due_date_proximity_notice).
+1. Evaluación de Fecha Límite (due_date):
+   * Tarea vencida: delay_probability = 1.0, factor overdue.
+   * Horas restantes <= 24: +0.60 a delay_probability (due_date_proximity_critical).
+   * Horas restantes <= 72: +0.35 a delay_probability (due_date_proximity_warning).
+   * Horas restantes <= 168 (1 semana): +0.15 a delay_probability (due_date_proximity_notice).
 
-2. Evaluación de Lista de Verificación ($checklist$):
+2. Evaluación de Lista de Verificación (checklist):
    * Avance < 100%: factor incomplete_checklist.
    * Horas restantes <= 48 y avance < 50%: +0.25 (low_checklist_velocity).
    * Horas restantes <= 24 y avance < 80%: +0.30 (low_checklist_velocity).
    * Avance = 0%: +0.10.
    * Sin checklist, faltan <= 24 horas y estado es pending: +0.40 (unstarted_critical_task).
 
-3. Evaluación de Sobrecarga del Desarrollador ($assigned\_to$):
+3. Evaluación de Sobrecarga del Desarrollador (assigned_to):
    * Tareas activas asignadas en el proyecto >= 3: +0.15 (developer_overload).
 
-4. Evaluación de Estancamiento ($TaskStateHistory$):
+4. Evaluación de Estancamiento (TaskStateHistory):
    * Días en estado in_progress o blocked >= 5: +0.20 (status_stagnation).
    * Si el estado es blocked: +0.10 adicional (task_blocked).
 
-La probabilidad resultante se acota en el rango $0.0 \le P(delay_i) \le 1.0$.
+La probabilidad resultante se acota estrictamente en el rango 0.0 <= P(delay_i) <= 1.0.
 
 ![Figura 8.1. Diagrama de Flujo Algorítmico del Smart Risk Engine](/C:/Users/DanielMacias/.gemini/antigravity-ide/brain/4a6d343d-6b23-45c1-b692-0024d08c81b9/evidencias/diagramas/flujo_smart_risk_engine.png)  
 *Figura 8.1. Diagrama de Flujo Algorítmico del Smart Risk Engine. Fuente: Elaboración propia.*
@@ -312,13 +312,13 @@ delay_probability = min(max(delay_probability, 0.0), 1.0)
 
 ### 8.4 Ejemplo de Clasificación Paso a Paso
 Consideremos la tarea T10 - Implementar Autenticación OAuth:
-* Fecha Límite: Faltan 12 horas ($hours\_left = 12 \le 24 \rightarrow +0.60$, factor due_date_proximity_critical).
-* Checklist: 0 de 4 subtareas completadas ($rate = 0.0 \rightarrow +0.10$ adicional, factor incomplete_checklist).
-* Sobrecarga: Desarrollador asignado con 3 tareas activas en el proyecto ($\rightarrow +0.15$, factor developer_overload).
-* Estancamiento: 6 días en estado in_progress en TaskStateHistory ($\rightarrow +0.20$, factor status_stagnation).
+* Fecha Límite: Faltan 12 horas (hours_left = 12 <= 24 -> +0.60, factor due_date_proximity_critical).
+* Checklist: 0 de 4 subtareas completadas (rate = 0.0 -> +0.10 adicional, factor incomplete_checklist).
+* Sobrecarga: Desarrollador asignado con 3 tareas activas en el proyecto (-> +0.15, factor developer_overload).
+* Estancamiento: 6 días en estado in_progress en TaskStateHistory (-> +0.20, factor status_stagnation).
 
 Cálculo:
-$$P(delay) = 0.60 + 0.10 + 0.15 + 0.20 = 1.05 \xrightarrow{\text{acotado}} 1.00$$
+P(delay) = 0.60 + 0.10 + 0.15 + 0.20 = 1.05 -> acotado a 1.00
 
 Dado que 1.00 >= 0.75, la tarea se clasifica automáticamente como Riesgo Alto (high) con un retraso estimado de +2 días, activando alertas rojas en la interfaz.
 
@@ -423,14 +423,14 @@ Para evaluar la hipótesis planteada, se analizaron los registros de telemetría
 
 1. Estado ANTES (Consulta SQL SELECT COUNT(*) FROM tasks WHERE due_date < now() AND status != 'done'):
    * Se identificaron 5 de 10 tareas con vencimiento expirado ([CRITICAL] Módulo de Conciliación, [CRITICAL] Cifrado de Transacciones, Migración de Servicio de Libros, API REST de Transferencias SPEI, Servicio de Detección de Fraude).
-   * Tasa de entregas extemporáneas sin alertas predictivas: $TTFP_{antes} = \left(\frac{5}{10}\right) \times 100 = 50.0\%$.
+   * Tasa de entregas extemporáneas sin alertas predictivas: TTFP_antes = (5 / 10) * 100 = 50.0%.
 
 2. Estado DESPUÉS (Ejecución de SmartRiskEngineService.calculate_task_risk()):
-   * El motor predictivo identificó preventivamente las 5 tareas en condición crítica con $P(delay) \ge 0.95$.
-   * Al exponer las alertas rojas y los factores de causa origen en la UI, los responsables intervinieron completando subtareas y reasignando desarrolladores, logrando que únicamente 1 tarea cerrara fuera de plazo ($TTFP_{después} = 10.0\%$).
+   * El motor predictivo identificó preventivamente las 5 tareas en condición crítica con P(delay) >= 0.95.
+   * Al exponer las alertas rojas y los factores de causa origen en la UI, los responsables intervinieron completando subtareas y reasignando desarrolladores, logrando que únicamente 1 tarea cerrara fuera de plazo (TTFP_después = 10.0%).
 
 3. Demostración Porcentual de Reducción Relativa:
-   $$\text{Reducción Relativa} = \left( \frac{TTFP_{antes} - TTFP_{después}}{TTFP_{antes}} \right) \times 100 = \left( \frac{50.0\% - 10.0\%}{50.0\%} \right) \times 100 = 80.0\%$$
+   Reducción Relativa = ((TTFP_antes - TTFP_después) / TTFP_antes) * 100 = ((50.0% - 10.0%) / 50.0%) * 100 = 80.0%
 
 Dado que la reducción del 80.0% supera el umbral del 25.0% planteado en la hipótesis, se acepta la hipótesis de investigación.
 
@@ -448,7 +448,7 @@ El algoritmo heurístico de evaluación condicional demostrado en app/services/r
 
 ## 14. TRABAJO FUTURO
 
-1. Notificaciones Push en Tiempo Real (WebSockets): Implementar una capa de eventos mediante WebSockets para alertar a los miembros del equipo cuando una tarea supere el umbral $P(delay) \ge 0.75$.
+1. Notificaciones Push en Tiempo Real (WebSockets): Implementar una capa de eventos mediante WebSockets para alertar a los miembros del equipo cuando una tarea supere el umbral P(delay) >= 0.75.
 2. Integración con Repositorios Git (GitHub API): Conectar el factor de sobrecarga con los commits y Pull Requests reales enviados por el desarrollador para refinar la estimación del esfuerzo de código.
 
 ---
