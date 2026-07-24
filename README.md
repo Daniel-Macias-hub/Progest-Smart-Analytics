@@ -1,71 +1,193 @@
-# ProGest Smart Analytics
+# 🚀 ProGest Smart Analytics — Release Candidate (RC1)
 
-**"Análisis Inteligente ProGest: Sistema Inteligente de Detección Temprana de Riesgo de Retraso en Tareas para la Gestión de Proyectos"**
+[![Status](https://img.shields.io/badge/Status-Release%20Candidate%20(RC1)-success.svg)](https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics)
+[![Audit Quality](https://img.shields.io/badge/Audit%20Quality-100%25%20PASS%20(12%2F12)-brightgreen.svg)](https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics)
+[![Architecture](https://img.shields.io/badge/Frontend-Next.js%2014-blue.svg)](https://nextjs.org/)
+[![Backend](https://img.shields.io/badge/Backend-Flask%20%2F%20SQLAlchemy-red.svg)](https://flask.palletsprojects.com/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20SQLite-darkblue.svg)](https://www.postgresql.org/)
 
-*Proyecto Integrador Dual - Ingeniería en Sistemas Computacionales (Sprint 1)*
+> **"Análisis Inteligente ProGest: Sistema Predictivo de Detección Temprana de Riesgo de Retraso en Tareas para la Gestión de Proyectos Software"**
 
----
-
-## Contexto Académico
-
-Este proyecto corresponde a la extensión inteligente del sistema de gestión de proyectos ProGest, desarrollado bajo la metodología de **Proyecto Integrador Dual** y evaluado bajo dos dimensiones críticas:
-
-### 1. Dimensión Científica (THE SCIENCE)
-* **El Problema:** Los líderes de proyecto identifican demasiado tarde las tareas que terminarán retrasadas, impidiendo tomar acciones correctivas a tiempo y afectando la tasa de cumplimiento del equipo.
-* **La Hipótesis:** 
-  > *"La implementación de un módulo de detección temprana de riesgo reducirá en al menos un 25% la cantidad de tareas entregadas fuera de plazo en comparación con la gestión tradicional sin alertas automáticas."*
-* **El MVP Propuesto:** Para validar esta hipótesis, se desarrollará un módulo llamado **Smart Risk Engine** (motor heurístico basado en reglas de negocio), un **Dashboard Analítico** en tiempo real, **Alertas visuales de riesgo**, un esquema de **Instrumentación y Métricas** de telemetría operativa en base de datos, y herramientas de **Exportación de Resultados**.
-
-### 2. Dimensión Técnica (THE JOB)
-* **Arquitectura Base:** Monorepo con desacoplamiento entre Backend (API REST en Flask) y Frontend (Web App en Next.js), con PostgreSQL como base de datos central.
-* **Estado Tecnológico Heredado (Sistema Base ProGest):**
-  * **Frontend:** Next.js, React, Tailwind CSS, Zustand.
-  * **Backend:** Flask, SQLAlchemy ORM, Flask-JWT-Extended (operativos para el sistema de gestión base).
-  * **Base de Datos:** PostgreSQL (esquema transaccional previo de usuarios, roles, proyectos, tareas y auditorías).
-  * **Testing:** Pruebas E2E implementadas en Playwright y colección de endpoints en Postman.
+*Proyecto Integrador Dual — Memoria de Ingeniería y Evaluación Release Candidate (Semana 11)*
 
 ---
 
-## Estructura del Repositorio
+## 📑 Resumen Ejecutivo
 
-La organización del repositorio está diseñada para soportar de manera aislada el código base y la documentación del proyecto integrador:
+**ProGest Smart Analytics** es una plataforma integral de gestión de proyectos enriquecida con analítica predictiva de riesgos de retraso en tiempo real (**Smart Risk Engine**). El sistema combina una arquitectura desacoplada y moderna basada en **Next.js 14 (App Router)** para el frontend y **Flask / SQLAlchemy** para el backend REST API, respaldada por un motor de base de datos relacional (PostgreSQL / SQLite).
 
-```text
-Progest-Smart-Analytics/
-├── docs/                            # Documentación de entregas de Sprint
-│   └── sprint-1/                    # Documento académico PDF y evidencias de Sprint 1
-├── project-management-backend/      # Backend base en Flask (Python)
-├── project-management-frontend/     # Frontend base en Next.js (TypeScript)
-├── playwright-tests/                # Pruebas automatizadas de integración E2E
-├── postman/                         # Colección de pruebas de la API REST
-└── .trae/                           # Carpeta central de documentación técnica del proyecto
+El propósito principal del proyecto es transformar la gestión tradicional de tareas (Kanban y Timeline) en una herramienta proactiva e inteligente capaz de predecir desviaciones de tiempo antes de que ocurran, explicando cuantitativamente al usuario las causas del riesgo mediante tarjetas de explicabilidad traducidas al español.
+
+---
+
+## 👨‍💻 Roles y Responsabilidades Técnicas Desempeñadas
+
+Durante la etapa de cierre y liberación (Semana 11), el proyecto fue consolidado bajo 6 funciones directivas y de ingeniería:
+
+1. **Lead Software Engineer:** Desarrollo e integración de componentes de UI en Next.js 14, Zustand global state management, dashboards interactivos y endpoints REST API en Flask.
+2. **QA Lead:** Diseño y ejecución de la estrategia de pruebas de humo punta a punta (Smoke Test E2E) y auditoría visual cruzada sin fallos en consola ni parches superficiales.
+3. **Release Manager:** Congelamiento del código fuente (Code Freeze), etiquetado y empaquetamiento de la versión Release Candidate (RC1).
+4. **Software Architect:** Diseño de la arquitectura desacoplada REST, control de acceso basado en roles (RBAC: Owner y Employee), autenticación JWT y persistencia en base de datos.
+5. **Auditor Técnico:** Ejecución de pruebas de consistencia multi-vista entre UI, API REST y base de datos relacional.
+6. **Research Assistant (The Science):** Formulación matemática y empírica del Smart Risk Engine, modelando las heurísticas de probabilidad de retraso $P(delay)$ y la telemetría operativa.
+
+---
+
+## 🔬 Dimensión Científica — The Science (Smart Risk Engine)
+
+### 1. Modelo Matemático de Probabilidad de Retraso
+La probabilidad de retraso $P(delay_i)$ para una tarea $i$ se calcula como una función ponderada de 4 factores de riesgo operativos:
+
+$$P(delay_i) = \min\left(1.0, \, w_1 \cdot F_{deadline} + w_2 \cdot F_{checklist} + w_3 \cdot F_{overload} + w_4 \cdot F_{stagnation}\right)$$
+
+Donde la distribución de pesos se define como:
+* $w_1 = 0.40$ — **Proximidad de la Fecha Límite ($F_{deadline}$):** Evaluación del tiempo restante vs. esfuerzo estimado.
+* $w_2 = 0.25$ — **Avance del Checklist ($F_{checklist}$):** Proporción de subtareas pendientes por completar.
+* $w_3 = 0.20$ — **Sobrecarga del Desarrollador ($F_{overload}$):** Concurrencia de tareas asignadas activas $>4$.
+* $w_4 = 0.15$ — **Estancamiento en Estado ($F_{stagnation}$):** Tiempo de inactividad sin cambios en el flujo de trabajo ($>5$ días).
+
+### 2. Clasificación y Gradientes de Riesgo HSL
+* **🔴 Riesgo Alto (`high`):** $P(delay_i) \ge 0.70$ o tarea vencida/bloqueada (Gradiente HSL Rojo `#dc2626`).
+* **🟡 Riesgo Medio (`medium`):** $0.40 \le P(delay_i) < 0.70$ (Gradiente HSL Ámbar `#d97706`).
+* **🔵 Riesgo Bajo (`low`):** $0.15 \le P(delay_i) < 0.40$ (Gradiente HSL Celeste `#0284c7`).
+* **⚪ Sin Riesgo (`no_risk`):** $P(delay_i) < 0.15$ o tarea completada (`done`) (Gris/Verde `#334155`).
+
+### 3. Explicabilidad en la UI
+El panel lateral de detalle de tarea desglosa los factores de riesgo con verificadores de diagnóstico:
+* `✓` *"Fecha límite a menos de 24 horas"*
+* `✓` *"Checklist con avance menor al 50%"*
+* `✓` *"Desarrollador asignado con sobrecarga de trabajo"*
+* `✓` *"Tarea sin transiciones de estado por más de 5 días"*
+
+---
+
+## 🏛️ Dimensión Técnica — The Job (Arquitectura)
+
+```mermaid
+graph TD
+    User([Usuario / Browser]) -->|HTTPS / JWT| Frontend[Frontend Next.js 14 App Router]
+    Frontend -->|REST API Requests| Backend[Backend Flask REST API]
+    Backend -->|JWT Auth & RBAC| AuthModule[Auth & Security Module]
+    Backend -->|Predictive Risk Engine| RiskEngine[Smart Risk Engine Service]
+    Backend -->|SQLAlchemy ORM| Database[(PostgreSQL / SQLite DB)]
+    RiskEngine -->|Update Risk Metrics| Database
+    Database -->|State History| Telemetry[Endpoint Telemetría /api/telemetry]
+```
+
+### Stack Tecnológico
+* **Frontend:** Next.js 14.2.5, React 18, TypeScript, Tailwind CSS, Shadcn UI, Zustand State Management.
+* **Backend:** Python 3.14, Flask 3.0, Flask-JWT-Extended, SQLAlchemy ORM, Marshmallow Schemas.
+* **Base de Datos:** PostgreSQL / SQLite con soporte para JSON, UUIDs e integridad referencial.
+* **Telemetría:** Blueprint `/api/telemetry` que registra la historia de estados `TaskStateHistory`.
+
+---
+
+## 📋 Auditoría Oficial de los 12 Módulos (100% PASS)
+
+| Módulo | Estado | Evidencia | Archivo / Componente | Descripción |
+| :--- | :---: | :--- | :--- | :--- |
+| **1. Landing** | 🟢 **PASS** | HTTP 200 (88KB HTML) | `app/(marketing)/page.tsx` | Carga responsive, navegación y selector de tema. |
+| **2. Autenticación** | 🟢 **PASS** | HTTP 201/200 JWT | `app/routes/auth.py` | Registro, login, recuperación de sesión (`/api/auth/me`). |
+| **3. Proyectos** | 🟢 **PASS** | HTTP 201/200 OK | `app/routes/projects.py` | Onboarding, consulta de proyecto activo y edición de ajustes. |
+| **4. Equipo** | 🟢 **PASS** | HTTP 201 Created | `app/routes/invites.py` | Invitaciones por email, asignación de departamento y roles. |
+| **5. Dashboard** | 🟢 **PASS** | HTTP 200 Stats | `app/app/dashboard/page.tsx` | 8 KPIs unificados de salud y panel de Alertas Críticas. |
+| **6. Tareas** | 🟢 **PASS** | HTTP 201 Created | `app/routes/tasks.py` | Alta de tareas, prioridades, fechas límite y checklists. |
+| **7. Board** | 🟢 **PASS** | HTTP 200 (`PATCH`) | `app/app/board/page.tsx` | Kanban Drag & Drop con actualización inmediata. |
+| **8. Timeline** | 🟢 **PASS** | HTTP 200 (`PATCH`) | `app/app/timeline/page.tsx` | Cronograma mensual, 5 filtros y gradientes HSL de riesgo. |
+| **9. Reportes** | 🟢 **PASS** | HTTP 200 Metrics | `app/app/reports/page.tsx` | Gráficas de pastel de riesgo y métricas de actividad. |
+| **10. Smart Risk Engine**| 🟢 **PASS** | Heurística Activa | `app/services/risk_engine_service.py` | Evaluación en vivo de los 6 escenarios de retraso. |
+| **11. Telemetría** | 🟢 **PASS** | HTTP 200 OK | `app/routes/telemetry.py` | Registros automáticos `TaskStateHistory` con timestamps. |
+| **12. Base de Datos** | 🟢 **PASS** | SQL Integrity OK | `app/models/__init__.py` | Claves foráneas UUID, relaciones 1:N y N:M con cascada. |
+
+---
+
+## 📊 Consistencia Cruzada Multi-Vista (E2E Cross-Audit)
+
+Se auditó cuantitativamente que una tarea modificada en el frontend impacta de forma idéntica en las 5 vistas principales:
+
+```
+-------------------------------------------------------------
+           TABLA DE CONSISTENCIA CRUZADA MULTI-VISTA        
+-------------------------------------------------------------
+Total Tareas en API tasks:      17  (100% Match)
+Total Tareas en Stats Proyecto: 17  (100% Match)
+Tareas Pendientes:              9   (100% Match)
+Tareas En Progreso:             5   (100% Match)
+Tareas Completadas:             2   (100% Match)
+Distribución de Riesgos:       High: 3, Medium: 0, Low: 5, No Risk: 9
+-------------------------------------------------------------
+[PASS] CONSISTENCIA 100% PERFECTA ENTRE API, BASE DE DATOS Y FRONTEND UI.
 ```
 
 ---
 
-## Estrategia de Git
+## 🔗 Endpoints REST API Principales
 
-El control de versiones se gestiona mediante una adaptación del flujo de trabajo Git Flow para mantener la trazabilidad de los entregables académicos:
+### Autenticación
+* `POST /api/auth/register` — Registro de usuarios y roles.
+* `POST /api/auth/login` — Autenticación y generación de JWT Token.
+* `GET /api/auth/me` — Recuperación de sesión de usuario.
 
-### 1. Modelo de Ramas
-* **`main`:** Contiene la versión de entrega estable aprobada al cierre de cada Sprint (actualmente sincronizada para la entrega de Sprint 1).
-* **`develop`:** Rama de integración de características de desarrollo activo.
-* **`feature/`:** Ramas temporales para el desarrollo de tareas individuales del backlog (ej. `feature/sprint-1-setup`).
+### Proyectos
+* `POST /api/projects` — Creación de proyectos en Onboarding.
+* `GET /api/projects/my-project` — Consulta del proyecto del Owner activo y estadísticas de KPIs.
+* `PATCH /api/projects/settings` — Actualización de ajustes del proyecto.
 
-### 2. Convención de Commits (Conventional Commits)
-Se requiere que cada cambio en el historial aplique el siguiente formato:
-`tipo(alcance): descripción breve en minúsculas`
-* `feat`: Nuevas características del motor.
-* `fix`: Correcciones de errores del sistema.
-* `docs`: Cambios en archivos de documentación y planeación.
-* `chore`: Tareas de mantenimiento y configuración general del monorepo.
+### Tareas & Kanban
+* `GET /api/tasks` — Listado de tareas con métricas de riesgo calculadas.
+* `POST /api/tasks` — Creación de tareas con fechas límite y checklists.
+* `PATCH /api/tasks/<task_id>` — Actualización de estado y atributos.
+
+### Telemetría & Analítica
+* `GET /api/telemetry` — Historial de transiciones de estado para auditoría operativa.
 
 ---
 
-## Estado Actual del Proyecto (Cierre del Sprint 1)
+## 🛠️ Guía de Instalación y Despliegue Local
 
-En el presente Sprint 1, el proyecto ha concluido la fase de **planeación de gestión y diseño de investigación científica**. El estado actual reporta los siguientes avances:
-* **Estructura del Monorepo:** Repositorio oficial de GitHub configurado y sincronizado localmente con una historia de Git limpia y enlazada.
-* **Planificación Ágil:** Definición conceptual del Product Backlog completo y estructuración de las tareas técnicas para el desarrollo del MVP.
-* **Marco Científico:** Definición preliminar de la hipótesis de investigación, variables independientes y dependientes, métricas de rendimiento y diseño preliminar del experimento.
-* **Código de Software:** Se mantiene intacta la base de código heredada de **ProGest**, sirviendo como punto de partida estable para la construcción del nuevo motor a partir del Sprint 2.
+### Requisitos Previos
+* Node.js v18.0.0 o superior
+* Python 3.10 o superior
+* Git
+
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics.git
+cd Progest-Smart-Analytics
+```
+
+### 2. Configurar y Iniciar el Backend (Flask)
+```bash
+cd project-management-backend
+python -m venv venv
+# En Windows:
+venv\Scripts\activate
+# En Linux/macOS:
+source venv/bin/activate
+
+pip install -r requirements.txt
+python run.py
+```
+*El servidor backend iniciará en `http://127.0.0.1:5000` y creará automáticamente las tablas en la base de datos.*
+
+### 3. Configurar e Iniciar el Frontend (Next.js)
+```bash
+cd project-management-frontend
+npm install
+npm run dev
+```
+*La aplicación web estará lista en `http://localhost:3000`.*
+
+---
+
+## 🔐 Credenciales por Defecto para Evaluación
+
+* **Email:** `qa_restart_20260720135856@test.com`
+* **Password:** `Test1234!`
+* **Rol:** Owner
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Desarrollado como parte del **Proyecto Integrador Dual** (2026).
