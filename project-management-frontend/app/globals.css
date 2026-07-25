@@ -2,7 +2,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is([data-theme="dark"] *));
+@custom-variant dark (&:is(.dark *), &:is([data-theme="dark"] *));
+
 
 :root, [data-theme="light"] {
   --background: #F7F8F9;

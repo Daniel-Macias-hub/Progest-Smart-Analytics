@@ -1,109 +1,60 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Sunset, Sunrise } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { animate } from "animejs"
-
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  const currentTheme = theme === "system" ? resolvedTheme : theme
+  const isDark = currentTheme === "dark" || currentTheme === "sunset"
+
+  const toggleTheme = () => {
+    const nextTheme = isDark ? "light" : "dark"
+    setTheme(nextTheme)
+
+    if (typeof document !== "undefined") {
+      const root = document.documentElement
+      root.setAttribute("data-theme", nextTheme)
+      root.style.colorScheme = nextTheme
+      if (nextTheme === "dark") {
+        root.classList.add("dark")
+      } else {
+        root.classList.remove("dark")
+      }
+    }
+  }
+
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon" className="w-9 h-9 opacity-50 cursor-default">
         <Sun className="h-4 w-4" />
-        <span className="sr-only">Seleccionar tema</span>
+        <span className="sr-only">Cambiar tema</span>
       </Button>
     )
   }
 
-  const activeIcon = () => {
-    switch(theme) {
-      case 'dark': return <Moon className="h-4 w-4" />;
-      case 'sunset': return <Sunset className="h-4 w-4" />;
-      case 'sunrise': return <Sunrise className="h-4 w-4" />;
-      default: return <Sun className="h-4 w-4" />;
-    }
-  }
-
-  const handleHover = (e: React.MouseEvent<HTMLDivElement>) => {
-    try {
-      if (typeof animate === "function") {
-        animate(e.currentTarget.querySelectorAll('svg'), {
-          rotate: '1turn',
-          scale: [1, .5, 1],
-          duration: 1200,
-          ease: 'outElastic(1, .8)'
-        });
-      }
-    } catch {
-      // Ignorar fallas secundarias de animacion para asegurar la interactividad
-    }
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="focus-visible:ring-0">
-          {activeIcon()}
-          <span className="sr-only">Seleccionar tema</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[150px]">
-        <DropdownMenuItem onClick={() => { setTheme("light"); if (typeof document !== "undefined") document.documentElement.classList.remove("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
-          <Sun className="h-4 w-4 text-muted-foreground mr-1" />
-          <div className="flex flex-col gap-0.5 w-full">
-            <span className="text-sm font-medium">Clásico</span>
-            <div className="flex gap-1.5 opacity-90">
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#FFFFFF] border" />
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#1D7AFC]" />
-            </div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("dark"); if (typeof document !== "undefined") document.documentElement.classList.add("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
-          <Moon className="h-4 w-4 text-muted-foreground mr-1" />
-          <div className="flex flex-col gap-0.5 w-full">
-            <span className="text-sm font-medium">Dark Mode</span>
-            <div className="flex gap-1.5 opacity-90">
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#161A1D] border border-muted" />
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#1D7AFC]" />
-            </div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("sunset"); if (typeof document !== "undefined") document.documentElement.classList.add("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
-          <Sunset className="h-4 w-4 text-muted-foreground mr-1" />
-          <div className="flex flex-col gap-0.5 w-full">
-            <span className="text-sm font-medium">Sunset</span>
-            <div className="flex gap-1.5 opacity-90">
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#2f3834] border border-muted" />
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#C0AB92]" />
-            </div>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("sunrise"); if (typeof document !== "undefined") document.documentElement.classList.remove("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
-          <Sunrise className="h-4 w-4 text-muted-foreground mr-1" />
-          <div className="flex flex-col gap-0.5 w-full">
-            <span className="text-sm font-medium">Sunrise</span>
-            <div className="flex gap-1.5 opacity-90">
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#f3e8e5] border border-muted" />
-              <span className="h-3 w-3 rounded-full shadow-sm bg-[#a04d66]" />
-            </div>
-          </div>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      title={isDark ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+      className="w-9 h-9 rounded-full transition-transform active:scale-95 hover:bg-accent/50 focus-visible:ring-0"
+    >
+      {isDark ? (
+        <Sun className="h-4 w-4 text-amber-400 transition-all duration-300 rotate-0 scale-100" />
+      ) : (
+        <Moon className="h-4 w-4 text-slate-700 dark:text-amber-300 transition-all duration-300 rotate-0 scale-100" />
+      )}
+      <span className="sr-only">Cambiar a {isDark ? "Modo Claro" : "Modo Oscuro"}</span>
+    </Button>
   )
 }
