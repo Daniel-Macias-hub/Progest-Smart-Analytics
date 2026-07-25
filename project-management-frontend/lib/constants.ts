@@ -25,8 +25,9 @@ export const TASK_STATUSES = {
 export const BACKEND_TASK_STATUSES = {
   PENDING: "pending" as const,
   IN_PROGRESS: "in_progress" as const,
-  COMPLETED: "completed" as const,
-  CANCELLED: "cancelled" as const,
+  IN_REVIEW: "in_review" as const,
+  BLOCKED: "blocked" as const,
+  DONE: "done" as const,
 }
 
 export const TASK_STATUS_LABELS: Record<string, string> = {
@@ -117,11 +118,14 @@ export const RISK_LEVEL_COLORS_LIGHT: Record<string, { bg: string; text: string;
 }
 
 export const RISK_FACTOR_LABELS: Record<string, string> = {
-  is_unassigned: "Sin asignar",
-  is_overdue: "Fecha vencida",
-  is_high_priority: "Prioridad alta/urgente",
-  is_blocked: "Tarea bloqueada",
-  has_no_due_date: "Sin fecha de vencimiento",
-  has_many_state_changes: "Muchos cambios de estado",
-  is_stale: "Sin actividad reciente",
+  overdue: "Fecha vencida",
+  due_date_proximity_critical: "Vence en menos de 24h",
+  due_date_proximity_warning: "Vence en menos de 3 días",
+  due_date_proximity_notice: "Vence esta semana",
+  incomplete_checklist: "Checklist incompleto",
+  low_checklist_velocity: "Progreso de checklist lento",
+  unstarted_critical_task: "Tarea crítica sin iniciar",
+  developer_overload: "Desarrollador con sobrecarga",
+  status_stagnation: "Sin cambio de estado reciente",
+  task_blocked: "Tarea bloqueada",
 }

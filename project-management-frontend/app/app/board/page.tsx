@@ -20,6 +20,7 @@ import { normalizeAvatarUrl } from "@/lib/avatars"
 import { SPRINT_COLOR_CLASS } from "@/lib/sprintColors"
 import { cn } from "@/lib/utils"
 import { RiskBadge } from "@/components/ui/risk-badge"
+import { BoardSkeleton } from "@/components/ui/module-skeletons"
 
 const COLUMNS: TaskStatus[] = ["pending", "in_progress", "in_review", "blocked", "done"]
 
@@ -81,61 +82,45 @@ export default function BoardPage() {
     setErrorMessage("")
 
     try {
-      const settingsResult = await getProjectSettingsService()
+      const [settingsResult, sprintsResult, tasksData, membersResponse] = await Promise.all([
+        getProjectSettingsService().catch(() => ({ success: false, project: null })),
+        listSprints().catch(() => ({ success: false, sprints: [] })),
+        fetchTasks(projectId).catch(() => []),
+        listMembers().catch(() => ({ success: false, members: [] })),
+      ])
+
       if (settingsResult.success && settingsResult.project) {
         setProject(settingsResult.project as any)
       }
 
-      const sprintEnabled = !!(settingsResult.success ? settingsResult.project?.sprint_enabled : session?.project?.sprint_enabled)
-
-      if (sprintEnabled) {
-        const sprintsResult = await listSprints()
-        if (sprintsResult.success && sprintsResult.sprints) {
-          setSprints(sprintsResult.sprints)
-          if (sprintFilter === "all") {
-            const active = sprintsResult.sprints.find((s) => s.status === "active")
-            if (active) setSprintFilter(active.id)
-          }
+      if (sprintsResult.success && sprintsResult.sprints) {
+        setSprints(sprintsResult.sprints)
+        if (sprintFilter === "all") {
+          const active = sprintsResult.sprints.find((s) => s.status === "active")
+          if (active) setSprintFilter(active.id)
         }
       } else {
         setSprints([])
         setSprintFilter("all")
       }
 
-      // Fetch tasks and members in parallel
-      const [tasksData, membersResponse] = await Promise.all([
-        fetchTasks(projectId),
-        listMembers()
-      ])
-
       // Update Zustand store with fetched data
       setTasks(tasksData)
       
       if (membersResponse.success && membersResponse.members) {
         setMembers(membersResponse.members)
-        // Update users in store for assignee display
         const usersData = membersResponse.members
           .map((m) => m.user)
           .filter((u): u is User => !!u)
         setUsers(usersData)
-      } else {
-        const errorMsg = membersResponse.error || "Error al cargar miembros"
-        setErrorMessage(errorMsg)
-        setHasError(true)
-        toast({
-          title: "Error",
-          description: errorMsg,
-          variant: "destructive"
-        })
       }
-    } catch (error: any) {
-      console.error("Error loading board data:", error)
-      const errorMsg = getErrorMessage(error)
-      setErrorMessage(errorMsg)
+    } catch (err: any) {
       setHasError(true)
+      const msg = getErrorMessage(err)
+      setErrorMessage(msg)
       toast({
         title: "Error",
-        description: errorMsg,
+        description: msg,
         variant: "destructive"
       })
     } finally {
@@ -257,6 +242,10 @@ export default function BoardPage() {
       </div>
     </div>
   )
+
+  if (isLoading && tasks.length === 0) {
+    return <BoardSkeleton message="Organizando tablero..." />
+  }
 
   return (
     <div className="flex flex-col gap-[24px] relative z-[1]">

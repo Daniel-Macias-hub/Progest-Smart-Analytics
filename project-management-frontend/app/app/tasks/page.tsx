@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils"
 import { SPRINT_COLOR_CLASS } from "@/lib/sprintColors"
 import { normalizeAvatarUrl } from "@/lib/avatars"
 import { RiskBadge } from "@/components/ui/risk-badge"
+import { TasksSkeleton } from "@/components/ui/module-skeletons"
 
 export default function TasksPage() {
   const session = useAuthStore((s) => s.session)
@@ -150,28 +151,26 @@ export default function TasksPage() {
   async function loadData() {
     setLoading(true)
     try {
-      const settingsResult = await getProjectSettingsService()
+      const [settingsResult, tasksData, membersResult, sprintsResult] = await Promise.all([
+        getProjectSettingsService().catch(() => ({ success: false, project: null })),
+        fetchTasks().catch(() => []),
+        listMembers().catch(() => ({ success: false, members: [] })),
+        listSprints().catch(() => ({ success: false, sprints: [] })),
+      ])
+
       const enabled = settingsResult.success && settingsResult.project ? !!settingsResult.project.sprint_enabled : !!session?.project?.sprint_enabled
       if (settingsResult.success && settingsResult.project) {
         setProject(settingsResult.project as any)
       }
       setSprintEnabled(enabled)
-
-      const tasksData = await fetchTasks()
       setTasks(tasksData)
-      
-      const membersResult = await listMembers()
+
       if (membersResult.success && membersResult.members) {
         setMembers(membersResult.members)
       }
 
-      if (enabled) {
-        const sprintsResult = await listSprints()
-        if (sprintsResult.success && sprintsResult.sprints) {
-          setSprints(sprintsResult.sprints)
-        } else {
-          setSprints([])
-        }
+      if (sprintsResult.success && sprintsResult.sprints) {
+        setSprints(sprintsResult.sprints)
       } else {
         setSprints([])
       }
@@ -711,6 +710,10 @@ export default function TasksPage() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
+  }
+
+  if (loading && tasks.length === 0) {
+    return <TasksSkeleton message="Obteniendo tareas..." />
   }
 
   return (

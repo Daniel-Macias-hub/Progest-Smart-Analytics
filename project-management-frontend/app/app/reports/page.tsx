@@ -15,8 +15,9 @@ import { fetchTasks } from "@/services/taskService"
 import { listMembers } from "@/services/memberService"
 import { listSprints } from "@/services/sprintService"
 import { toast } from "sonner"
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts"
 import { Download, Loader2 } from "lucide-react"
+import { ReportsSkeleton } from "@/components/ui/module-skeletons"
 
 export default function ReportsPage() {
   const session = useAuthStore((s) => s.session)
@@ -32,9 +33,9 @@ export default function ReportsPage() {
       setLoading(true)
       try {
         const [t, m, sp] = await Promise.all([
-          fetchTasks(session.project.id),
-          listMembers(),
-          listSprints(),
+          fetchTasks(session.project.id).catch(() => []),
+          listMembers().catch(() => ({ success: false, members: [] })),
+          listSprints().catch(() => ({ success: false, sprints: [] })),
         ])
         setTasks(t)
         if (m.success && m.members) setMembers(m.members)
@@ -138,6 +139,67 @@ export default function ReportsPage() {
     }
     return map
   }, [members])
+
+  const riskOrder = ["no_risk", "low", "medium", "high"]
+  const riskChartConfig = useMemo(() => ({
+    no_risk: { label: "Sin riesgo", color: "#10b981" },
+    low: { label: "Bajo", color: "#0ea5e9" },
+    medium: { label: "Medio", color: "#f59e0b" },
+    high: { label: "Alto", color: "#ef4444" }
+  }), [])
+
+  const riskData = useMemo(() => 
+    riskOrder.map((level) => ({
+      level,
+      count: filteredTasks.filter((t) => (t.risk_status ?? "no_risk") === level).length,
+      fill: level === "high" ? "#ef4444" : level === "medium" ? "#f59e0b" : level === "low" ? "#0ea5e9" : "#10b981"
+    })),
+    [filteredTasks]
+  )
+
+  const timelineData = useMemo(() => {
+    const map: Record<string, { created: number; completed: number }> = {}
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().slice(0, 10)
+      map[dateStr] = { created: 0, completed: 0 }
+    }
+    
+    for (const t of filteredTasks) {
+      if (t.created_at) {
+        const cDate = t.created_at.slice(0, 10)
+        if (map[cDate]) map[cDate].created++
+      }
+      if (t.completed_at && t.status === "done") {
+        const compDate = t.completed_at.slice(0, 10)
+        if (map[compDate]) map[compDate].completed++
+      }
+    }
+    
+    return Object.keys(map).sort().map(date => {
+      const parts = date.split('-')
+      return {
+        date: `${parts[2]}/${parts[1]}`,
+        Creadas: map[date].created,
+        Completadas: map[date].completed
+      }
+    })
+  }, [filteredTasks])
+
+  const RISK_FACTOR_LABELS: Record<string, string> = {
+    overdue: "Fecha límite vencida",
+    due_date_proximity_critical: "Próxima a vencer (<24 horas)",
+    due_date_proximity_warning: "Próxima a vencer (<72 horas)",
+    due_date_proximity_notice: "Próxima a vencer (<1 semana)",
+    incomplete_checklist: "Checklist incompleto",
+    low_checklist_velocity: "Avance lento de checklist",
+    unstarted_critical_task: "Tarea crítica sin iniciar",
+    developer_overload: "Sobrecarga de trabajo del desarrollador",
+    status_stagnation: "Estancamiento en estado actual",
+    task_blocked: "Tarea bloqueada"
+  }
+
 
   function parseIsoDate(value?: string | null) {
     if (!value) return null
@@ -344,12 +406,8 @@ export default function ReportsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+  if (loading && tasks.length === 0) {
+    return <ReportsSkeleton message="Preparando reportes..." />
   }
 
   return (
@@ -476,6 +534,124 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Distribución de Riesgos (Smart Risk Engine)</CardTitle></CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <ChartContainer config={riskChartConfig} className="h-[220px]">
+              <PieChart>
+                <ChartTooltip content={<ChartTooltipContent nameKey="level" />} />
+                <Pie data={riskData} dataKey="count" nameKey="level" innerRadius={60} outerRadius={90} strokeWidth={2}>
+                  {riskData.map((entry) => (
+                    <Cell key={entry.level} fill={entry.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+            <div className="flex flex-col gap-3">
+              {riskData.map((r) => {
+                const label = r.level === "high" ? "Alto Riesgo" : r.level === "medium" ? "Riesgo Medio" : r.level === "low" ? "Riesgo Bajo" : "Sin Riesgo"
+                const badgeColor = r.level === "high" ? "bg-red-500/10 text-red-500 border-red-500/20" : r.level === "medium" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : r.level === "low" ? "bg-sky-500/10 text-sky-500 border-sky-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                return (
+                  <div key={r.level} className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className={badgeColor}>{label}</Badge>
+                      <span className="text-sm font-medium">{r.count} ({total > 0 ? Math.round((r.count / total) * 100) : 0}%)</span>
+                    </div>
+                    <Progress value={total > 0 ? (r.count / total) * 100 : 0} className="h-2" />
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Actividad Temporal (Últimos 7 Días)</CardTitle></CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <ChartContainer config={{}} className="h-[220px]">
+              <LineChart data={timelineData} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line type="monotone" dataKey="Creadas" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="Completadas" stroke="#10b981" strokeWidth={2} />
+              </LineChart>
+            </ChartContainer>
+            <div className="flex justify-center gap-6 text-xs font-medium mt-2">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-blue-500" />
+                <span>Tareas Creadas</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                <span>Tareas Completadas</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-white/20 backdrop-blur-md border border-white/40 shadow-sm transition-all">
+        <CardHeader className="pb-2 border-b border-white/10">
+          <CardTitle className="text-xs font-bold uppercase tracking-wider text-admin-dark-grey">Explicabilidad de Riesgos (Smart Risk Engine)</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="flex flex-col gap-4">
+            {filteredTasks.filter(t => t.status !== "done" && (t.risk_status ?? "no_risk") !== "no_risk").length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay tareas con riesgo activo en el filtro actual.</p>
+            ) : (
+              filteredTasks.filter(t => t.status !== "done" && (t.risk_status ?? "no_risk") !== "no_risk").map(t => {
+                const badgeColor = t.risk_status === "high" ? "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse" : t.risk_status === "medium" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-sky-500/10 text-sky-500 border-sky-500/20"
+                const probability = Math.round((t.delay_probability ?? 0) * 100)
+                const delayDays = t.predicted_delay_days ?? 0
+                const factors = t.risk_factors ? Object.keys(t.risk_factors).filter(f => t.risk_factors[f]) : []
+                
+                return (
+                  <div key={t.id} className="p-3 rounded-lg border bg-white/40 flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h4 className="text-sm font-semibold">{t.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">Asignado a: {t.assigned_to ? memberNameByUserId[t.assigned_to] || t.assigned_to : "Sin asignar"}</p>
+                      </div>
+                      <Badge variant="outline" className={badgeColor}>
+                        {t.risk_status === "high" ? "Riesgo Alto" : t.risk_status === "medium" ? "Riesgo Medio" : "Riesgo Bajo"}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-xs mt-1 border-t border-b border-border/40 py-2">
+                      <div>
+                        <span className="text-muted-foreground block">Probabilidad de retraso:</span>
+                        <span className="font-bold text-sm text-slate-800">{probability}%</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">Retraso estimado:</span>
+                        <span className="font-bold text-sm text-slate-800">{delayDays} {delayDays === 1 ? "día" : "días"}</span>
+                      </div>
+                    </div>
+                    
+                    {factors.length > 0 && (
+                      <div className="flex flex-col gap-1.5 mt-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Factores de Riesgo Detectados:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {factors.map(f => (
+                            <Badge key={f} variant="outline" className="text-[10px] bg-slate-100/50 border-slate-200">
+                              ✓ {RISK_FACTOR_LABELS[f] || f}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
 
       <Card className="bg-white/20 backdrop-blur-md border border-white/40 shadow-sm transition-all hover:bg-white/30">
         <CardHeader className="pb-2 border-b border-white/10">

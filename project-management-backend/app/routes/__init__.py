@@ -10,5 +10,7 @@ from .notifications import notifications_bp
 from .comments import comments_bp
 from .admin import admin_bp
 from .team_chat import team_chat_bp
+from .telemetry import telemetry_bp
 
-__all__ = ['auth_bp', 'projects_bp', 'invites_bp', 'members_bp', 'tasks_bp', 'sprints_bp', 'notifications_bp', 'comments_bp', 'admin_bp', 'team_chat_bp']
+__all__ = ['auth_bp', 'projects_bp', 'invites_bp', 'members_bp', 'tasks_bp', 'sprints_bp', 'notifications_bp', 'comments_bp', 'admin_bp', 'team_chat_bp', 'telemetry_bp']
+

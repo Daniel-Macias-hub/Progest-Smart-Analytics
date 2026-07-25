@@ -5,7 +5,15 @@ import type { Notification } from "@/mock/types"
 import { deleteNotification, fetchNotifications, getUnreadCount, markAllAsRead, markAsRead } from "@/services/notificationService"
 import { toast } from "sonner"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+  if (typeof window !== "undefined" && window.location.hostname) {
+    return `http://${window.location.hostname}:5000/api`
+  }
+  return "http://localhost:5000/api"
+}
+
+const API_URL = getApiUrl()
 
 let audioCtx: AudioContext | null = null
 

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     
     # Importar usando importlib para evitar conflictos
     import importlib.util
-    spec = importlib.util.spec_from_file_location("app_module", os.path.join(current_dir, "app.py"))
+    spec = importlib.util.spec_from_file_location("app_module", os.path.join(current_dir, "run.py"))
     app_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(app_module)
     app = app_module.app

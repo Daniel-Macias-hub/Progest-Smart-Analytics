@@ -18,17 +18,12 @@ export function RoleGate({ children, allowedRole, currentPath }: RoleGateProps) 
   const session = useAuthStore((s) => s.session)
   const hydrated = useAuthStore((s) => s.hydrated)
   const hydrate = useAuthStore((s) => s.hydrate)
-  const resetSeed = useDataStore((s) => s.resetSeed)
 
   useEffect(() => {
-    hydrate()
-  }, [hydrate])
-
-  useEffect(() => {
-    if (!hydrated) return
-    if (!session) return
-    resetSeed()
-  }, [hydrated, session?.user?.id, resetSeed])
+    if (!hydrated) {
+      hydrate()
+    }
+  }, [hydrated, hydrate])
 
   useEffect(() => {
     if (!hydrated) return

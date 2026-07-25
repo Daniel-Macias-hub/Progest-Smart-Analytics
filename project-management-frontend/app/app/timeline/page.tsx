@@ -37,8 +37,10 @@ export default function TimelinePage() {
   const [loading, setLoading] = useState(true)
   const [sprintFilter, setSprintFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [priorityFilter, setPriorityFilter] = useState<string>("all")
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all")
   const [search, setSearch] = useState("")
+
 
   const [startDateDialogOpen, setStartDateDialogOpen] = useState(false)
   const [startDateTask, setStartDateTask] = useState<Task | null>(null)
@@ -104,6 +106,10 @@ export default function TimelinePage() {
         return t.sprint_id === sprintFilter
       })
       .filter((t) => {
+        if (priorityFilter === "all") return true
+        return t.priority === priorityFilter
+      })
+      .filter((t) => {
         if (assigneeFilter === "all") return true
         if (assigneeFilter === "unassigned") return !t.assigned_to
         return t.assigned_to === assigneeFilter
@@ -112,7 +118,8 @@ export default function TimelinePage() {
         if (!q) return true
         return (t.title || "").toLowerCase().includes(q) || (t.description || "").toLowerCase().includes(q)
       })
-  }, [tasks, projectId, statusFilter, sprintEnabled, sprintFilter, assigneeFilter, search])
+  }, [tasks, projectId, statusFilter, priorityFilter, sprintEnabled, sprintFilter, assigneeFilter, search])
+
 
   const scheduledTasks = useMemo(
     () => filtered
@@ -187,7 +194,7 @@ export default function TimelinePage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-admin-dark-grey">Filtros de Cronograma</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-4">
+          <CardContent className="grid gap-4 md:grid-cols-5">
             <div className="grid gap-1.5">
               <Label className="text-[11px] font-semibold text-admin-dark/70">Buscar</Label>
               <Input 
@@ -204,6 +211,18 @@ export default function TimelinePage() {
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
                   {Object.entries(TASK_STATUS_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-[11px] font-semibold text-admin-dark/70">Prioridad</Label>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="h-9 bg-white/50 border-white/30"><SelectValue placeholder="Todos" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {Object.entries(TASK_PRIORITY_LABELS).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>
@@ -235,6 +254,7 @@ export default function TimelinePage() {
                 </SelectContent>
               </Select>
             </div>
+
           </CardContent>
         </Card>
       </div>
@@ -265,7 +285,13 @@ export default function TimelinePage() {
                     const sprint = sprintEnabled && t.sprint_id ? sprintById.get(t.sprint_id) : undefined
                     const sprintCls = sprint ? SPRINT_COLOR_CLASS[sprint.color] : null
                     return (
-                      <Card key={t.id} className="bg-admin-blue border-none shadow-md transition-all hover:scale-[1.01] overflow-hidden group">
+                      <Card key={t.id} className={cn(
+                        "border-none shadow-md transition-all hover:scale-[1.01] overflow-hidden group",
+                        t.risk_status === "high" && "bg-gradient-to-r from-red-600 to-red-500 text-white",
+                        t.risk_status === "medium" && "bg-gradient-to-r from-amber-600 to-amber-500 text-white",
+                        t.risk_status === "low" && "bg-gradient-to-r from-sky-600 to-sky-500 text-white",
+                        (!t.risk_status || t.risk_status === "no_risk") && "bg-gradient-to-r from-slate-700 to-slate-800 text-white"
+                      )}>
                         <CardContent className="flex items-center gap-4 p-3 relative">
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                           <div className="flex-1 min-w-0">
@@ -273,6 +299,11 @@ export default function TimelinePage() {
                             <div className="mt-1.5 flex flex-wrap items-center gap-2">
                               <Badge variant="outline" className={cn("text-[10px] bg-white/10 border-white/20 text-white", TASK_STATUS_COLORS[t.status])}>{TASK_STATUS_LABELS[t.status]}</Badge>
                               <Badge variant="outline" className={cn("text-[10px] bg-white/10 border-white/20 text-white", TASK_PRIORITY_COLORS[t.priority])}>{TASK_PRIORITY_LABELS[t.priority]}</Badge>
+                              {t.risk_status && t.risk_status !== "no_risk" && (
+                                <Badge variant="outline" className="text-[10px] bg-white/20 border-white/25 text-white font-extrabold">
+                                  Riesgo: {t.risk_status === "high" ? "Alto" : t.risk_status === "medium" ? "Medio" : "Bajo"}
+                                </Badge>
+                              )}
                               {sprintEnabled ? (
                                 t.sprint_id && sprint ? (
                                   <span className={cn("inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors bg-white/20 border-white/10 text-white")}>
@@ -286,6 +317,7 @@ export default function TimelinePage() {
                               {assignee ? <span className="text-[10px] text-white/80 ml-1">{assignee.name}</span> : null}
                             </div>
                           </div>
+
                           <div className="text-right text-xs text-white/90 font-medium shrink-0 bg-white/10 p-1.5 rounded-md border border-white/10">
                             <div>{new Date(t.start_date!).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</div>
                             {t.due_date && <div className="text-white/60 text-[10px]">- {new Date(t.due_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</div>}

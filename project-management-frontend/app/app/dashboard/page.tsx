@@ -14,7 +14,11 @@ import { AnimatedFlashCard, AnimatedFlashCardVariant } from "@/components/ui/ani
 import { AnimatedExportButton } from "@/components/ui/animated-export-button"
 import { RiskBadge } from "@/components/ui/risk-badge"
 import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
 import "./animated-cards.css"
+
+
+import { DashboardSkeleton } from "@/components/ui/module-skeletons"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -24,11 +28,12 @@ export default function DashboardPage() {
   const setTasks = useDataStore((s) => s.setTasks)
   const setMemberships = useDataStore((s) => s.setMemberships)
 
-  const [isLoading, setIsLoading] = useState(true)
-
   const projectId = session?.project?.id
   const projectTasks = useMemo(() => tasks.filter((t) => t.project_id === projectId), [tasks, projectId])
   const members = useMemo(() => memberships.filter((m) => m.project_id === projectId && m.status === "active"), [memberships, projectId])
+
+  // Si ya hay tareas en el store para este proyecto, mostrar de inmediato sin bloquear (<100ms)
+  const [isLoading, setIsLoading] = useState(() => projectTasks.length === 0)
 
   useEffect(() => {
     let isMounted = true
@@ -85,37 +90,36 @@ export default function DashboardPage() {
   }, [projectId, setTasks])
 
   const done = projectTasks.filter((t) => t.status === "done").length
-  const inProgress = projectTasks.filter((t) => t.status === "in_progress").length
-  const inReview = projectTasks.filter((t) => t.status === "in_review").length
-  const pending = projectTasks.filter((t) => t.status === "pending").length
-  const blocked = projectTasks.filter((t) => t.status === "blocked").length
   const total = projectTasks.length
-  const completionRate = total > 0 ? Math.round((done / total) * 100) : 0
+  
+  // KPIs Solicitados
+  const inRiskCount = projectTasks.filter((t) => t.status !== "done" && t.risk_status && t.risk_status !== "no_risk").length
+  
+  const nowStr = new Date().toISOString()
+  const delayedCount = projectTasks.filter((t) => t.status !== "done" && t.due_date && t.due_date < nowStr).length
 
-  const stats: StatItem[] = [
-    { label: "Total Tareas", value: total, variant: "info", action: "Detalles", url: "/app/board" },
-    { label: "Completadas", value: done, variant: "success", action: "Ver Board", url: "/app/board" },
-    { label: "En Progreso", value: inProgress, variant: "working", action: "", url: "" },
-    { label: "En Revisión", value: inReview, variant: "working", action: "", url: "" },
-    { label: "Bloqueadas", value: blocked, variant: "error", action: "Revisar", url: "/app/board" },
-    { label: "Miembros", value: members.length, variant: "info", action: "Equipo", url: "/app/team" },
-    { label: "Completado (%)", value: `${completionRate}%`, variant: "success", action: "Reportes", url: "/app/reports" },
-  ]
-
-  // Smart Risk Engine KPIs
   const highRiskCount = projectTasks.filter((t) => t.risk_status === "high").length
   const mediumRiskCount = projectTasks.filter((t) => t.risk_status === "medium").length
+  const lowRiskCount = projectTasks.filter((t) => t.risk_status === "low").length
   const noRiskCount = projectTasks.filter((t) => !t.risk_status || t.risk_status === "no_risk").length
-  const avgProb = projectTasks.length > 0
-    ? projectTasks.reduce((acc, t) => acc + (t.delay_probability || 0), 0) / projectTasks.length
-    : 0
-  const avgProbPct = Math.round(avgProb * 100)
-  
-  const riskStats: StatItem[] = [
-    { label: "Tareas Riesgo Alto", value: highRiskCount, variant: "error", action: "Revisar", url: "/app/tasks" },
+
+  interface StatItem {
+    label: string
+    value: string | number
+    variant: "info" | "success" | "working" | "error"
+    action: string
+    url: string
+  }
+
+  const stats: StatItem[] = [
+    { label: "Total Tareas", value: total, variant: "info", action: "Ver Lista", url: "/app/tasks" },
+    { label: "En Riesgo", value: inRiskCount, variant: "working", action: "Analizar", url: "/app/reports" },
+    { label: "Completadas", value: done, variant: "success", action: "Ver Board", url: "/app/board" },
+    { label: "Retrasadas", value: delayedCount, variant: "error", action: "Revisar", url: "/app/tasks" },
+    { label: "Riesgo Alto", value: highRiskCount, variant: "error", action: "Ver Tareas", url: "/app/tasks" },
     { label: "Riesgo Medio", value: mediumRiskCount, variant: "working", action: "Detalles", url: "/app/tasks" },
+    { label: "Riesgo Bajo", value: lowRiskCount, variant: "info", action: "Ver", url: "/app/tasks" },
     { label: "Sin Riesgo", value: noRiskCount, variant: "success", action: "Ver", url: "/app/tasks" },
-    { label: "Probabilidad Promedio", value: `${avgProbPct}%`, variant: "info", action: "Reportes", url: "/app/reports" },
   ]
 
   // Top 3 Risk Tasks
@@ -123,6 +127,50 @@ export default function DashboardPage() {
     .filter(t => t.status !== "done" && t.risk_status !== "no_risk" && (t.delay_probability ?? 0) > 0)
     .sort((a, b) => (b.delay_probability || 0) - (a.delay_probability || 0))
     .slice(0, 3)
+
+  // Alertas Críticas Automáticas
+  const alerts = useMemo(() => {
+    const list: { id: string; title: string; type: "blocked" | "critical" | "due_soon"; message: string }[] = []
+    const now = new Date()
+    const limit48h = new Date()
+    limit48h.setDate(now.getDate() + 2)
+    const limit48hStr = limit48h.toISOString()
+    const nowStr = now.toISOString()
+
+    for (const t of projectTasks) {
+      if (t.status === "done") continue
+
+      if (t.status === "blocked") {
+        list.push({
+          id: t.id,
+          title: t.title,
+          type: "blocked",
+          message: "Esta tarea se encuentra BLOQUEADA y detiene el flujo de trabajo."
+        })
+      }
+      if (t.risk_status === "high" || t.priority === "urgent") {
+        list.push({
+          id: t.id,
+          title: t.title,
+          type: "critical",
+          message: `Riesgo Alto detectado por Smart Risk Engine. Prioridad: ${t.priority}.`
+        })
+      }
+      if (t.due_date && t.due_date <= limit48hStr) {
+        const isPast = t.due_date < nowStr
+        list.push({
+          id: t.id,
+          title: t.title,
+          type: "due_soon",
+          message: isPast 
+            ? `¡Venció el ${new Date(t.due_date).toLocaleDateString("es-ES")}!` 
+            : `Próxima a vencer el ${new Date(t.due_date).toLocaleDateString("es-ES")} (<48h).`
+        })
+      }
+    }
+    return list
+  }, [projectTasks])
+
 
   function exportToCSV() {
     const header = "Metrica,Valor\n"
@@ -137,6 +185,10 @@ export default function DashboardPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  if (isLoading && projectTasks.length === 0) {
+    return <DashboardSkeleton message="Cargando Dashboard..." />
   }
 
   return (
@@ -188,33 +240,22 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Smart Risk Engine Section */}
-      <div className="flex flex-col gap-4 mt-8 mb-6">
-        <h2 className="text-[24px] font-[600] text-admin-dark ml-2">Smart Risk Engine</h2>
-        
-        {/* Risk KPIs */}
-        <div className="flex flex-row flex-wrap items-center justify-center p-0 m-0 w-full">
-          {riskStats.map((s, i) => (
-            <div key={i} className="flex-shrink-0 flex-grow-0 w-full max-w-[288px] sm:-mx-6 transform scale-[0.80] hover:scale-[0.83] transition-transform origin-center">
-              <AnimatedFlashCard 
-                  variant={s.variant} 
-                  value={isLoading ? "—" : s.value} 
-                  label={s.label} 
-                  actionLabel={s.action}
-                  onAction={s.url ? () => router.push(s.url) : undefined}
-              />
+      {/* Smart Risk Engine & Critical Alerts Section */}
+      <div className="grid gap-6 md:grid-cols-2 mx-2 mt-8 mb-6">
+        {/* Tareas con Mayor Riesgo */}
+        <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="text-red-500">⚠️</span> Tareas con Mayor Riesgo de Retraso
+          </h3>
+          {topRiskTasks.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center py-6 text-center text-sm text-slate-500 font-medium">
+              No se detectaron tareas con riesgo activo.
             </div>
-          ))}
-        </div>
-
-        {/* Top Risk Tasks Summary */}
-        {topRiskTasks.length > 0 && (
-          <div className="mx-2 mt-2 p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Tareas con Mayor Probabilidad de Retraso</h3>
+          ) : (
             <div className="flex flex-col gap-3">
               {topRiskTasks.map(t => (
-                <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-4 flex-1">
+                <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100/80 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                     <RiskBadge
                       variant="dashboard"
                       riskStatus={t.risk_status ?? "no_risk"}
@@ -222,13 +263,14 @@ export default function DashboardPage() {
                       predictedDelayDays={t.predicted_delay_days}
                       riskFactors={t.risk_factors}
                       lightBackground
+                      className="shrink-0"
                     />
-                    <Link href={`/app/tasks/${t.id}`} className="font-medium text-slate-700 hover:text-admin-blue hover:underline">
+                    <Link href={`/app/tasks/${t.id}`} className="font-semibold text-slate-700 hover:text-admin-blue hover:underline text-sm truncate">
                       {t.title}
                     </Link>
                   </div>
-                  <div className="flex flex-col items-end min-w-[120px]">
-                    <span className="text-xs text-slate-500 mb-1">
+                  <div className="flex flex-col items-end min-w-[120px] shrink-0">
+                    <span className="text-[11px] text-slate-500 mb-1">
                       {t.predicted_delay_days ? `~${t.predicted_delay_days} días de retraso` : "Retraso inminente"}
                     </span>
                     <Progress 
@@ -240,9 +282,48 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Alertas Críticas */}
+        <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="text-amber-500">🔔</span> Alertas Críticas del Proyecto
+          </h3>
+          {alerts.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center py-6 text-center text-sm text-emerald-600 font-medium">
+              <span>✓ El proyecto está saludable y no tiene alertas críticas.</span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 max-h-[260px] overflow-y-auto pr-1">
+              {alerts.slice(0, 5).map((a, idx) => (
+                <div key={idx} className={cn(
+                  "flex flex-col gap-1 p-3 rounded-lg border transition-all hover:scale-[1.01]",
+                  a.type === "blocked" && "bg-red-500/5 border-red-500/20 text-red-700",
+                  a.type === "critical" && "bg-amber-500/5 border-amber-500/20 text-amber-700",
+                  a.type === "due_soon" && "bg-sky-500/5 border-sky-500/20 text-sky-700"
+                )}>
+                  <div className="flex justify-between items-center gap-2">
+                    <Link href={`/app/tasks/${a.id}`} className="font-bold hover:underline text-sm truncate flex-1 min-w-0">
+                      {a.title}
+                    </Link>
+                    <Badge variant="outline" className={cn(
+                      "text-[9px] uppercase font-extrabold px-1.5 py-0.5 shrink-0",
+                      a.type === "blocked" && "bg-red-100 border-red-300 text-red-800",
+                      a.type === "critical" && "bg-amber-100 border-amber-300 text-amber-800",
+                      a.type === "due_soon" && "bg-sky-100 border-sky-300 text-sky-800"
+                    )}>
+                      {a.type === "blocked" ? "Bloqueada" : a.type === "critical" ? "Crítica" : "Vence Pronto"}
+                    </Badge>
+                  </div>
+                  <span className="text-xs opacity-90">{a.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
 
       <div className="flex flex-wrap gap-[24px] mt-[12px] w-full text-white transform scale-[0.95] origin-top">
         {/* Recent Orders (Members) -> Info Theme */}

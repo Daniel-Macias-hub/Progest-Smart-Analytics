@@ -147,7 +147,7 @@ export function AnimatedSearch() {
             </div>
           ) : (
             <div className="px-3 py-4 text-center text-[13px] text-admin-dark-grey">
-              No hay accesos directos para "{query}".<br/>
+              No hay accesos directos para &quot;{query}&quot;.<br/>
               <span className="text-[11px]">Pulsa Enter para buscar globalmente.</span>
             </div>
           )}

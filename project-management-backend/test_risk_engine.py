@@ -7,10 +7,16 @@ from app.services.risk_engine_service import SmartRiskEngineService
 
 class TestSmartRiskEngine(unittest.TestCase):
     def setUp(self):
-        # Configurar la app para pruebas en base de datos SQLite en memoria
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['TESTING'] = True
-        self.app_context = app.app_context()
+        from flask import Flask
+        # Crear una nueva aplicación Flask limpia para pruebas
+        self.test_app = Flask(__name__)
+        self.test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        self.test_app.config['TESTING'] = True
+        
+        # Asociar el objeto global db a la app de pruebas
+        db.init_app(self.test_app)
+        
+        self.app_context = self.test_app.app_context()
         self.app_context.push()
         
         # Inicializar tablas

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Progress } from "@/components/ui/progress"
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Send, Plus, Trash2, Loader2 } from "lucide-react"
@@ -25,9 +27,10 @@ import { normalizeAvatarUrl } from "@/lib/avatars"
 import { listMembers } from "@/services/memberService"
 import type { User } from "@/mock/types"
 
-export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function TaskDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params
   const session = useAuthStore((s) => s.session)
+
 
   // Estado local para la tarea y comentarios
   const [task, setTask] = useState<Task | null>(null)
@@ -503,6 +506,19 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const RISK_FACTOR_LABELS: Record<string, string> = {
+    overdue: "Fecha límite vencida",
+    due_date_proximity_critical: "Próxima a vencer (<24 horas)",
+    due_date_proximity_warning: "Próxima a vencer (<72 horas)",
+    due_date_proximity_notice: "Próxima a vencer (<1 semana)",
+    incomplete_checklist: "Checklist incompleto",
+    low_checklist_velocity: "Avance lento de checklist",
+    unstarted_critical_task: "Tarea crítica sin iniciar",
+    developer_overload: "Sobrecarga de trabajo del desarrollador",
+    status_stagnation: "Estancamiento en estado actual",
+    task_blocked: "Tarea bloqueada"
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
@@ -732,7 +748,69 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-white/20 backdrop-blur-md border border-white/40 shadow-sm transition-all">
+            <CardHeader className="pb-2 border-b border-white/10">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-admin-dark-grey">Smart Risk Engine</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-3 flex flex-col gap-3 text-xs">
+              {(!task.risk_status || task.risk_status === "no_risk") ? (
+                <div className="flex flex-col gap-1 items-center justify-center py-4 text-center">
+                  <span className="text-emerald-500 font-bold text-sm">✓ Tarea sin riesgo</span>
+                  <span className="text-muted-foreground">El motor predictivo no detectó amenazas de retraso.</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Nivel de Riesgo</span>
+                    <Badge variant="outline" className={cn(
+                      "font-bold",
+                      task.risk_status === "high" && "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse",
+                      task.risk_status === "medium" && "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                      task.risk_status === "low" && "bg-sky-500/10 text-sky-500 border-sky-500/20"
+                    )}>
+                      {task.risk_status === "high" ? "ALTO" : task.risk_status === "medium" ? "MEDIO" : "BAJO"}
+                    </Badge>
+                  </div>
+                  <Separator />
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between font-medium">
+                      <span className="text-muted-foreground">Probabilidad de retraso</span>
+                      <span className="text-slate-800 font-bold">{Math.round((task.delay_probability ?? 0) * 100)}%</span>
+                    </div>
+                    <Progress value={Math.round((task.delay_probability ?? 0) * 100)} className="h-2" indicatorClassName={cn(
+                      task.risk_status === "high" && "bg-red-500",
+                      task.risk_status === "medium" && "bg-amber-500",
+                      task.risk_status === "low" && "bg-sky-500"
+                    )} />
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Retraso estimado</span>
+                    <span className="font-bold text-slate-800">{task.predicted_delay_days ?? 0} {task.predicted_delay_days === 1 ? "día" : "días"}</span>
+                  </div>
+                  {task.risk_factors && Object.keys(task.risk_factors).filter(f => task.risk_factors[f]).length > 0 && (
+                    <>
+                      <Separator />
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Factores Identificados:</span>
+                        <div className="flex flex-col gap-1.5 pl-1">
+                          {Object.keys(task.risk_factors).filter(f => task.risk_factors[f]).map(f => (
+                            <div key={f} className="flex items-start gap-1.5 font-medium text-slate-700">
+                              <span className="text-emerald-500 shrink-0">✓</span>
+                              <span>{RISK_FACTOR_LABELS[f] || f}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
       </div>
     </div>
   )

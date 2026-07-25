@@ -59,6 +59,13 @@ class TaskService:
             if sprint.status == 'closed':
                 raise ValueError('No se pueden asignar tareas a un sprint cerrado')
 
+        # Normalizar fechas a naive UTC para evitar errores de comparación
+        for field in ('due_date', 'start_date', 'completed_at'):
+            if field in data and data[field] is not None:
+                dt = data[field]
+                if hasattr(dt, 'tzinfo') and dt.tzinfo is not None:
+                    data[field] = dt.replace(tzinfo=None)
+
         new_task = Task(
             project_id=project_id,
             created_by=creator_id,
@@ -76,6 +83,7 @@ class TaskService:
         SmartRiskEngineService.update_task_risk_metrics(new_task.id)
         
         return new_task
+
     
     @staticmethod
     def get_task_by_id(task_id, user_id, user_role):

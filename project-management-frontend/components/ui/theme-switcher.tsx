@@ -40,12 +40,18 @@ export function ThemeSwitcher() {
   }
 
   const handleHover = (e: React.MouseEvent<HTMLDivElement>) => {
-    animate(e.currentTarget.querySelectorAll('svg'), {
-      rotate: '1turn',
-      scale: [1, .5, 1],
-      duration: 1200,
-      ease: 'outElastic(1, .8)'
-    });
+    try {
+      if (typeof animate === "function") {
+        animate(e.currentTarget.querySelectorAll('svg'), {
+          rotate: '1turn',
+          scale: [1, .5, 1],
+          duration: 1200,
+          ease: 'outElastic(1, .8)'
+        });
+      }
+    } catch {
+      // Ignorar fallas secundarias de animacion para asegurar la interactividad
+    }
   };
 
   return (

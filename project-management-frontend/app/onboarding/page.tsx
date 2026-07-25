@@ -67,23 +67,52 @@ const themeOptions = [
   { id: "candy", label: "Candy" },
 ]
 
-const schema = z.object({
-  name: z.string().trim().min(3, "El nombre debe tener al menos 3 caracteres").max(60, "Máximo 60 caracteres"),
-  description: z.string().trim().min(20, "Minimo 20 caracteres").max(800, "Máximo 800 caracteres"),
-  category: z.string().min(1, "Selecciona una categoria"),
+const step1Schema = z.object({
+  name: z.string({ required_error: "El nombre del proyecto es obligatorio" })
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres")
+    .max(60, "Máximo 60 caracteres"),
+  description: z.string({ required_error: "La descripción es obligatoria" })
+    .trim()
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(800, "Máximo 800 caracteres"),
+})
+
+const step2Schema = z.object({
+  category: z.string({ required_error: "Selecciona una categoría" }).min(1, "Selecciona una categoría"),
   otherCategory: z.string().trim().max(50).optional(),
-  timezone: z.string().trim().min(1, "Selecciona una zona horaria"),
-  state: z.string().trim().min(1, "Selecciona el estado"),
+  timezone: z.string({ required_error: "Selecciona una zona horaria" }).trim().min(1, "Selecciona una zona horaria"),
+  state: z.string({ required_error: "Selecciona el estado" }).trim().min(1, "Selecciona el estado"),
+}).superRefine((d, ctx) => {
+  if (d.category === "Otro" && (!d.otherCategory || d.otherCategory.trim().length < 2)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoría" })
+  }
+})
+
+const schema = z.object({
+  name: z.string({ required_error: "El nombre del proyecto es obligatorio" })
+    .trim()
+    .min(3, "El nombre debe tener al menos 3 caracteres")
+    .max(60, "Máximo 60 caracteres"),
+  description: z.string({ required_error: "La descripción es obligatoria" })
+    .trim()
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(800, "Máximo 800 caracteres"),
+  category: z.string({ required_error: "Selecciona una categoría" }).min(1, "Selecciona una categoría"),
+  otherCategory: z.string().trim().max(50).optional(),
+  timezone: z.string({ required_error: "Selecciona una zona horaria" }).trim().min(1, "Selecciona una zona horaria"),
+  state: z.string({ required_error: "Selecciona el estado" }).trim().min(1, "Selecciona el estado"),
   tasks_retention_days: z.number().int().min(0).max(365),
   sprint_enabled: z.boolean(),
   sprint_length_days: z.number().int().min(7).max(30),
-  avatar: z.string().min(1, "Selecciona un avatar"),
+  avatar: z.string({ required_error: "Selecciona un avatar para tu perfil" }).min(1, "Selecciona un avatar"),
   preferred_theme: z.string().min(1),
 }).superRefine((d, ctx) => {
   if (d.category === "Otro" && (!d.otherCategory || d.otherCategory.trim().length < 2)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoria" })
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["otherCategory"], message: "Especifica la categoría" })
   }
 })
+
 
 type FormData = z.infer<typeof schema>
 
@@ -94,8 +123,9 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [isRotating, setIsRotating] = useState(false)
   const [activeTheme, setActiveTheme] = useState("barney")
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  const { register, handleSubmit, setValue, watch, trigger, clearErrors, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, setError, watch, clearErrors, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
@@ -152,10 +182,40 @@ export default function OnboardingPage() {
     )
   }
 
-  const rotateAndSetStep = async (nextStep: 1 | 2 | 3, fields: (keyof FormData)[]) => {
+  const rotateAndSetStep = async (nextStep: 1 | 2 | 3) => {
     clearErrors()
-    const ok = await trigger(fields)
-    if (!ok) return
+
+    if (step === 1) {
+      const result = step1Schema.safeParse({
+        name: watch("name"),
+        description: watch("description"),
+      })
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as keyof FormData
+          if (fieldName) {
+            setError(fieldName, { message: issue.message })
+          }
+        })
+        return
+      }
+    } else if (step === 2) {
+      const result = step2Schema.safeParse({
+        category: watch("category"),
+        otherCategory: watch("otherCategory"),
+        timezone: watch("timezone"),
+        state: watch("state"),
+      })
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as keyof FormData
+          if (fieldName) {
+            setError(fieldName, { message: issue.message })
+          }
+        })
+        return
+      }
+    }
     
     setIsRotating(true)
     setTimeout(() => setStep(nextStep), 600)
@@ -164,6 +224,7 @@ export default function OnboardingPage() {
 
   async function onFinish(data: FormData) {
     setLoading(true)
+    setServerError(null)
     try {
       // 1. Actualizar perfil (Avatar + Tema)
       const profileResult = await updateMeService({ 
@@ -172,7 +233,9 @@ export default function OnboardingPage() {
       })
       
       if (!profileResult.success) {
-        toast.error(profileResult.error || "No se pudo guardar tu perfil")
+        const errMsg = profileResult.error || "No se pudo guardar tu perfil"
+        setServerError(errMsg)
+        toast.error(errMsg)
         setLoading(false)
         return
       }
@@ -192,10 +255,13 @@ export default function OnboardingPage() {
       })
 
       if (!projectResult.success || !projectResult.project) {
-        toast.error(projectResult.error || "Error al crear el proyecto")
+        const errMsg = projectResult.error || "Error al crear el proyecto. Verifica que el nombre no esté duplicado."
+        setServerError(errMsg)
+        toast.error(errMsg)
         setLoading(false)
         return
       }
+
 
       const updatedSession = {
         ...session!,
@@ -369,6 +435,12 @@ export default function OnboardingPage() {
             </p>
           </div>
 
+          {serverError && (
+            <div className="rounded-lg border border-red-400/40 bg-red-950/60 p-3 text-xs text-red-200">
+              {serverError}
+            </div>
+          )}
+
           <div className="space-y-4 pt-4">
             {step === 1 && (
               <>
@@ -382,15 +454,18 @@ export default function OnboardingPage() {
                   {errors.name && <p className="text-xs text-red-200 mt-1">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white/90">Descripción</Label>
+                  <div className="flex justify-between items-center">
+                    <Label className="text-white/90">Descripción</Label>
+                    <span className="text-[10px] text-white/50">Mínimo 20 caracteres</span>
+                  </div>
                   <Textarea 
                     {...register("description")} 
                     className="input-glass min-h-[100px]" 
-                    placeholder="¿Cuál es el objetivo principal?"
+                    placeholder="¿Cuál es el objetivo principal de tu proyecto?"
                   />
                   {errors.description && <p className="text-xs text-red-200 mt-1">{errors.description.message}</p>}
                 </div>
-                <button type="button" onClick={() => rotateAndSetStep(2, ["name", "description"])} className="btn-submit">
+                <button type="button" onClick={() => rotateAndSetStep(2)} className="btn-submit">
                   Siguiente <ArrowRight size={18} />
                 </button>
               </>
@@ -443,10 +518,11 @@ export default function OnboardingPage() {
                   <button type="button" onClick={() => setStep(1)} className="btn-submit bg-white/5">
                     <ArrowLeft size={18} />
                   </button>
-                  <button type="button" onClick={() => rotateAndSetStep(3, ["category", "timezone", "state"])} className="btn-submit flex-1">
+                  <button type="button" onClick={() => rotateAndSetStep(3)} className="btn-submit flex-1">
                     Siguiente <ArrowRight size={18} />
                   </button>
                 </div>
+
               </>
             )}
 

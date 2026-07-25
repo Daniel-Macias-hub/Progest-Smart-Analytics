@@ -6,6 +6,8 @@ import Link from "next/link"
 import { ArrowUpRight, Mail } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { motion } from "framer-motion"
+import "./marketing-layout.css"
+
 
 const footerLinks = [
   {
@@ -42,39 +44,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <MarketingHeader />
       <main className="flex-1">{children}</main>
 
-      {/* ── CSS por tema — el selector apunta al <footer id="pg-footer"> ── */}
-      <style>{`
-        #pg-footer {
-          background:
-            radial-gradient(ellipse 80% 60% at 20% 120%, #1D7AFC1a 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 80% 115%, #60a5fa12 0%, transparent 55%),
-            radial-gradient(ellipse 100% 40% at 50% 105%, #93c5fd0d 0%, transparent 50%),
-            #F7F8F9;
-        }
-        [data-theme="dark"] #pg-footer {
-          background:
-            radial-gradient(ellipse 80% 60% at 15% 125%, #1D7AFC26 0%, transparent 60%),
-            radial-gradient(ellipse 70% 55% at 88% 118%, #3b82f61a 0%, transparent 55%),
-            radial-gradient(ellipse 90% 35% at 50% 108%, #0ea5e910 0%, transparent 50%),
-            #101214;
-        }
-        [data-theme="sunset"] #pg-footer {
-          background:
-            radial-gradient(ellipse 80% 60% at 20% 125%, #C0AB9226 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 80% 120%, #d4b8961a 0%, transparent 55%),
-            radial-gradient(ellipse 90% 40% at 50% 108%, #a8976a12 0%, transparent 50%),
-            #151c19;
-        }
-        [data-theme="sunrise"] #pg-footer {
-          background:
-            radial-gradient(ellipse 80% 60% at 20% 125%, #a04d6622 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 80% 118%, #c0728418 0%, transparent 55%),
-            radial-gradient(ellipse 90% 40% at 50% 108%, #f197aa10 0%, transparent 50%),
-            #ecd2c5;
-        }
-      `}</style>
-
       <footer
+
         id="pg-footer"
         className="relative overflow-hidden border-t border-border/40"
       >
@@ -163,10 +134,10 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           {/* Copyright */}
           <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-6 sm:flex-row">
             <p className="text-sm font-semibold text-foreground/70">
-              © 2026 ProGest. Todos los derechos reservados por el Equipo 1.
+              © 2026 ProGest. Todos los derechos reservados por MÍ (JDMM).
             </p>
             <div className="flex gap-4 text-sm font-medium text-foreground/55">
-              <span>Hecho con ♥ Para la materia de Implantación y Mantenimiento de Sistemas</span>
+              <span>Hecho con ♥ Para la materia DUAL de Microprocesadores</span>
               <span>·</span>
               <span>v1.0.0 — MVP</span>
             </div>
