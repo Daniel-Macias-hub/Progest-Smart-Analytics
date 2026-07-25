@@ -11,7 +11,8 @@
 **Carrera:** Ingeniería en Sistemas Computacionales  
 **Docente / Director de Proyecto:** Mtro. Juan Luis Carrillo García  
 **Materia:** Microprocesadores / Proyecto Integrador Dual  
-**Repositorio Oficial:** https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics  
+**Despliegue Oficial Vercel:** https://progest-smart-analytics.vercel.app  
+**Repositorio Oficial GitHub:** https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics  
 **Fecha de Entrega:** 24 de Julio de 2026  
 
 ---
@@ -64,7 +65,7 @@
 
 La gestión eficiente de proyectos de software depende críticamente de la capacidad para identificar oportunamente los factores de riesgo que provocan retrasos en el cronograma de actividades (Pressman & Maxim, 2020). En la mayoría de las plataformas tradicionales de administración de proyectos (como tableros Kanban o diagramas de Gantt estáticos), las desviaciones únicamente se detectan cuando la fecha límite ha expirado, lo que limita la capacidad de reacción proactiva de los responsables del proyecto e incrementa los costos operativos.
 
-El presente trabajo describe el desarrollo e implementación de ProGest Smart Analytics, una plataforma web para la gestión de proyectos que incorpora un motor predictivo denominado Smart Risk Engine. Este motor evalúa continuamente cuatro variables operativas clave en el módulo fuente app/services/risk_engine_service.py: la proximidad a la fecha límite (F_deadline), el porcentaje de avance de las listas de verificación (F_checklist), la sobrecarga de trabajo del desarrollador asignado (F_overload) y el tiempo de estancamiento en el flujo de trabajo (F_stagnation).
+El presente trabajo describe el desarrollo e implementación de ProGest Smart Analytics, una plataforma web desplegada en Vercel (https://progest-smart-analytics.vercel.app) para la gestión de proyectos que incorpora un motor predictivo denominado Smart Risk Engine. Este motor evalúa continuamente cuatro variables operativas clave en el módulo fuente app/services/risk_engine_service.py: la proximidad a la fecha límite (F_deadline), el porcentaje de avance de las listas de verificación (F_checklist), la sobrecarga de trabajo del desarrollador asignado (F_overload) y el tiempo de estancamiento en el flujo de trabajo (F_stagnation).
 
 Desarrollado mediante una arquitectura de servicios desacoplada compuesta por un frontend en Next.js 14 (Vercel, 2024), un backend en Flask 3.0 (Pallets, 2024) y una base de datos relacional (PostgreSQL / SQLite), el sistema integra un módulo de telemetría operativa que registra automáticamente cada transición de estado en la entidad TaskStateHistory.
 
@@ -102,7 +103,7 @@ Por consiguiente, resulta indispensable desarrollar un mecanismo automatizado e 
 El desarrollo de ProGest Smart Analytics se justifica desde dos vertientes integradas:
 
 ### Vertiente Profesional y Tecnológica ("The Job")
-Aporta una solución de software lista para producción (Release Candidate RC1) que satisface estándares de desarrollo comercial: código modular, separación de responsabilidades en arquitectura cliente-servidor, seguridad RBAC mediante tokens JWT (OWASP, 2023), manejo de excepciones y una interfaz de usuario fluida desarrollada con Next.js 14 y Tailwind CSS.
+Aporta una solución de software lista para producción (Release Candidate RC1) desplegada en la nube mediante Vercel que satisface estándares de desarrollo comercial: código modular, separación de responsabilidades en arquitectura cliente-servidor, seguridad RBAC mediante tokens JWT (OWASP, 2023), manejo de excepciones y una interfaz de usuario fluida desarrollada con Next.js 14 y Tailwind CSS.
 
 ### Vertiente Científica e Investigativa ("The Science")
 Aplica el método científico experimental para evaluar cuantitativamente cómo la instrumentación de algoritmos heurísticos de detección temprana permite reducir la tasa de entregas extemporáneas. A través del registro de telemetría en la entidad TaskStateHistory, el proyecto genera datos empíricos para evaluar el comportamiento del modelo matemático propuesto.
@@ -115,7 +116,7 @@ Aplica el método científico experimental para evaluar cuantitativamente cómo 
 Desarrollar e implementar un sistema inteligente para la gestión de proyectos software que permita detectar tempranamente tareas con riesgo de retraso mediante el análisis automático de múltiples variables operativas, evaluando empíricamente su funcionamiento a través de la recolección de datos de telemetría y análisis estadístico.
 
 ### 5.2 Objetivos Específicos
-1. Diseñar una arquitectura de software desacoplada compuesta por un frontend responsivo en Next.js 14 y un backend REST API en Flask 3.0 con soporte para persistencia relacional en PostgreSQL / SQLite.
+1. Diseñar una arquitectura de software desacoplada compuesta por un frontend responsivo en Next.js 14 desplegado en Vercel y un backend REST API en Flask 3.0 con soporte para persistencia relacional en PostgreSQL / SQLite.
 2. Formular e implementar el Smart Risk Engine, un algoritmo de evaluación heurística que calcule la probabilidad de retraso P(delay_i) y genere explicaciones causales en la UI.
 3. Instrumentar el modelo de datos mediante el patrón de telemetría TaskStateHistory para registrar de forma automática cada cambio de estado, timestamp y responsable.
 4. Ejecutar auditorías de calidad de software y pruebas de consistencia cruzada E2E entre la interfaz de usuario, los endpoints de la API y la base de datos relacional para garantizar coincidencia de datos multi-vista.
@@ -150,7 +151,7 @@ TTFP = (Tareas Retrasadas / Total de Tareas) * 100
 ### 7.1 Arquitectura General del Sistema
 La solución ProGest Smart Analytics adopta una arquitectura de software basada en el patrón de Servicios Desacoplados (Client-Server REST Architecture) (Pressman & Maxim, 2020). El sistema se divide en tres capas principales:
 
-1. Capa de Presentación (Frontend): Desarrollada con Next.js 14 (App Router) en TypeScript, con renderizado en el cliente (CSR), manejo de estado global reactivo mediante Zustand (stores/taskStore.ts) y estilos dinámicos basados en Tailwind CSS.
+1. Capa de Presentación (Frontend): Desarrollada con Next.js 14 (App Router) en TypeScript, desplegada en Vercel (https://progest-smart-analytics.vercel.app), con renderizado en el cliente (CSR), manejo de estado global reactivo mediante Zustand (stores/taskStore.ts) y estilos dinámicos basados en Tailwind CSS.
 2. Capa de Negocio y API (Backend): Implementada en Flask 3.0 (Python 3.14) estructurada modularmente con Blueprints (app/routes/), servicios desacoplados (TaskService, SmartRiskEngineService) y seguridad basada en tokens JWT (JSON Web Tokens) con roles de acceso (RBAC: OWNER y EMPLOYEE).
 3. Capa de Persistencia y Telemetría (Base de Datos): Gestionada a través del ORM SQLAlchemy 2.0 (SQLAlchemy Authors, 2024), respaldada por una base de datos relacional (PostgreSQL / SQLite), que almacena la estructura transaccional y el log de eventos TaskStateHistory.
 
@@ -205,14 +206,14 @@ El backend en Python 3.14 utiliza el patrón de diseño de Servicios y Controlad
 ---
 
 ### 7.5 Arquitectura Frontend (Next.js 14)
-El frontend implementa la estructura de Next.js 14 App Router (React Documentation, 2024) combinada con Zustand para el manejo de estado global sin recargas de página y Tailwind CSS para la renderización de gradientes HSL adaptativos.
+El frontend implementa la estructura de Next.js 14 App Router (React Documentation, 2024) desplegada en Vercel combinada con Zustand para el manejo de estado global sin recargas de página y Tailwind CSS para la renderización de gradientes HSL adaptativos.
 
 ---
 
 ### 7.6 Matriz de Tecnologías del Sistema
 | Componente | Tecnología | Versión | Rol en el Sistema |
 | :--- | :--- | :---: | :--- |
-| Framework Frontend | Next.js (React) | 14.2.5 | Renderizado reactivo de la interfaz web. |
+| Framework Frontend | Next.js (React) | 14.2.5 | Renderizado reactivo desplegado en Vercel. |
 | Lenguaje Frontend | TypeScript | 5.0.0+ | Tipado estático y prevención de errores. |
 | Librería de Estilos | Tailwind CSS / Shadcn | 3.4.0 | Sistema de diseño comercial con gradientes HSL. |
 | Manejo de Estado | Zustand | 4.5.0 | Gestión de estado global en memoria de cliente. |
@@ -331,7 +332,7 @@ Se ejecutó un plan de pruebas integral de 12 etapas verificando la funcionalida
 
 | Módulo Auditado | Resultado | Evidencia Técnica | Archivo / Componente | Observaciones QA |
 | :--- | :---: | :--- | :--- | :--- |
-| 1. Landing | PASS | HTTP 200 (88KB HTML) | app/(marketing)/page.tsx | Carga responsive, botones CTA y selector de tema. |
+| 1. Landing | PASS | HTTP 200 (88KB HTML) | app/(marketing)/page.tsx | Carga responsive en Vercel. |
 | 2. Autenticación | PASS | HTTP 201/200 JWT Token | app/routes/auth.py | Registro, login, emisión de JWT y /api/auth/me. |
 | 3. Proyectos | PASS | HTTP 201/200 OK | app/routes/projects.py | Onboarding de Owner, consulta y actualización PATCH. |
 | 4. Equipo | PASS | HTTP 201 Created | app/routes/invites.py | Envío de invitaciones con datos de puesto y turno. |
@@ -439,7 +440,7 @@ Dado que la reducción del 80.0% supera el umbral del 25.0% planteado en la hip�
 ## 13. CONCLUSIONES
 
 ### 13.1 Conclusión Técnica ("The Job")
-Se desarrolló una plataforma web comercial de alto rendimiento (Release Candidate RC1) caracterizada por una arquitectura cliente-servidor desacoplada (Next.js 14 y Flask 3.0), aprobación en las matrices de auditoría QA de 12 módulos y ausencia de errores de consola.
+Se desarrolló una plataforma web comercial de alto rendimiento (Release Candidate RC1) caracterizada por una arquitectura cliente-servidor desacoplada (Next.js 14 y Flask 3.0), desplegada en Vercel (https://progest-smart-analytics.vercel.app), aprobación en las matrices de auditoría QA de 12 módulos y ausencia de errores de consola.
 
 ### 13.2 Conclusión Científica ("The Science")
 El algoritmo heurístico de evaluación condicional demostrado en app/services/risk_engine_service.py comprobó ser un estimador estadístico consistente (mu = 0.2410, sigma = 0.3474). La instrumentación de telemetría automática en la entidad TaskStateHistory demostró la viabilidad de usar logs de software como fuente primaria de datos empíricos.
