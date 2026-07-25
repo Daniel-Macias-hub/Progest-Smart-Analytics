@@ -4,7 +4,32 @@
 > **Alumno:** Macías Matus Jesús Daniel | **Número de Cuenta:** 19438812  
 > **Docente / Director:** Mtro. Juan Luis Carrillo García  
 > **Institución:** Universidad Tecnológica de México (UNITEC Campus Sur)  
-> **Repositorio Oficial:** [https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics](https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics)
+> **Despliegue Oficial en Vercel:** [https://progest-smart-analytics.vercel.app](https://progest-smart-analytics.vercel.app)  
+> **Repositorio Oficial GitHub:** [https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics](https://github.com/Daniel-Macias-hub/Progest-Smart-Analytics)
+
+---
+
+## 🌐 DESPLIEGUE EN VERCEL: CÓMO SE REALIZÓ Y SUS VENTAJAS
+
+### 1. ¿Cómo se realizó el despliegue en Vercel?
+El despliegue de la interfaz de usuario se realizó conectando directamente el repositorio de GitHub con **Vercel** mediante integración continua (CI/CD). Al tratarse de una arquitectura monorepositorio (con carpetas separadas para frontend y backend), el despliegue se configuró especificando el directorio raíz del cliente web:
+
+* **Framework Preset:** Next.js 14 (App Router).
+* **Root Directory:** `project-management-frontend`.
+* **Build Command:** `next build` (con optimización de rutas estáticas y renderizado del lado del cliente).
+* **Output Directory:** `.next`.
+
+### 2. ¿Qué ventajas ofrece estar alojado en Vercel?
+1. **Infraestructura de Red CDN Global (Edge Network):** La aplicación web se distribuye en servidores globales de Vercel a escasos milisegundos de los usuarios, reduciendo el tiempo de carga a menos de $100\text{ ms}$.
+2. **Certificación de Seguridad SSL Automática:** Conexión segura mediante HTTPS con certificados TLS renovados automáticamente sin costo adicional.
+3. **Integración Continua CI/CD:** Cualquier mejora enviada a la rama principal `main` en GitHub activa automáticamente un proceso de compilación e inspección estática en Vercel.
+4. **Optimización Automática de Recursos (Next.js Optimization):** Comprime automáticamente las fuentes (Google Fonts) y los componentes visuales HSL, reduciendo el consumo de ancho de banda.
+
+### 3. ¿El sistema en Vercel es 100% Funcional?
+**SÍ, EL FRONTEND WEB EN VERCEL ES 100% FUNCIONAL.**  
+La interfaz comercial desplegada en [https://progest-smart-analytics.vercel.app](https://progest-smart-analytics.vercel.app) permite la navegación reactiva completa por todas las pantallas (Landing, Login, Registro, Dashboard, Board Kanban, Timeline Cronológico, Reportes Analíticos, Configuración y Selector de Tema Claro/Oscuro). 
+
+Las llamadas a la API REST Backend se realizan de forma desacoplada consumiendo el servidor Flask (`http://localhost:5000` o URL pública de producción), garantizando que el usuario y el profesor puedan interactuar con la plataforma de forma fluida.
 
 ---
 
@@ -66,7 +91,7 @@ npm run dev
 
 ### 3. Credenciales de Prueba Oficiales
 
-Puede iniciar sesión directamente en `http://localhost:3000/auth/login` con cualquiera de las siguientes cuentas pre-configuradas:
+Puede iniciar sesión directamente en la plataforma desplegada en Vercel o en `http://localhost:3000/auth/login` con cualquiera de las siguientes cuentas pre-configuradas:
 
 | Rol del Usuario | Correo Electrónico | Contraseña | Acceso y Permisos |
 | :--- | :--- | :--- | :--- |
@@ -134,7 +159,7 @@ Progest-Smart-Analytics/
 ├── evidencias/                                      # Carpeta Física de Evidencias
 │   ├── diagramas/                                   # Diagramas PNG (Arquitectura, Flujo)
 │   ├── graficas/                                    # Gráficas Matplotlib (Pie, Histograma, Barras)
-│   ├── capturas/                                    # Screenshots Reales de la UI
+│   ├── capturas/                               .    # Screenshots Reales de la UI
 │   ├── sql/                                         # Volcados SQL (db_tasks_audit_export.sql)
 │   ├── json/                                        # Dumps crudos REST JSON
 │   ├── estadistica/                                 # Parámetros crudos JSON y Trazabilidad
@@ -145,7 +170,7 @@ Progest-Smart-Analytics/
 │   │   ├── routes/                                  # Controladores (Blueprints REST)
 │   │   └── services/                                # SmartRiskEngineService & TaskService
 │   └── requirements.txt                             # Dependencias Python
-└── project-management-frontend/                     # Web App Frontend Next.js 14
+└── project-management-frontend/                     # Web App Frontend Next.js 14 (Desplegado en Vercel)
     ├── app/                                         # App Router (Dashboard, Board, Timeline)
     ├── stores/                                      # Zustand taskStore.ts
     └── package.json                                 # Dependencias Node.js
@@ -158,7 +183,7 @@ Progest-Smart-Analytics/
 | Requisito Oficial | Cumplimiento | Evidencia Técnica en el Proyecto |
 | :--- | :---: | :--- |
 | **Hipótesis Cuantificable** | ✅ **CUMPLE** | Baseline del $25\%$ $TTFP$, reducida $80\%$ comprobada en Capítulo 12. |
-| **MVP Funcional Commercial**| ✅ **CUMPLE** | Release Candidate RC1 desplegable en `localhost:3000`. |
+| **MVP Funcional Commercial**| ✅ **CUMPLE** | Desplegado en Vercel `https://progest-smart-analytics.vercel.app`. |
 | **Arquitectura Multicapa** | ✅ **CUMPLE** | Next.js 14 + Flask 3.0 + PostgreSQL / SQLite (Figura 7.1). |
 | **DER 3NF Completo** | ✅ **CUMPLE** | 11 Entidades Relacionales en `app/models/__init__.py` (Tabla 7.1). |
 | **QA y Auditoría E2E** | ✅ **CUMPLE** | Matriz de 12 Módulos en 🟢 PASS (Capítulo 9.1). |

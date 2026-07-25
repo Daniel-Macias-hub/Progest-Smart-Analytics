@@ -63,7 +63,7 @@ export function ThemeSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[150px]">
-        <DropdownMenuItem onClick={() => setTheme("light")} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { setTheme("light"); if (typeof document !== "undefined") document.documentElement.classList.remove("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
           <Sun className="h-4 w-4 text-muted-foreground mr-1" />
           <div className="flex flex-col gap-0.5 w-full">
             <span className="text-sm font-medium">Clásico</span>
@@ -73,7 +73,7 @@ export function ThemeSwitcher() {
             </div>
           </div>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { setTheme("dark"); if (typeof document !== "undefined") document.documentElement.classList.add("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
           <Moon className="h-4 w-4 text-muted-foreground mr-1" />
           <div className="flex flex-col gap-0.5 w-full">
             <span className="text-sm font-medium">Dark Mode</span>
@@ -83,7 +83,7 @@ export function ThemeSwitcher() {
             </div>
           </div>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("sunset")} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { setTheme("sunset"); if (typeof document !== "undefined") document.documentElement.classList.add("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
           <Sunset className="h-4 w-4 text-muted-foreground mr-1" />
           <div className="flex flex-col gap-0.5 w-full">
             <span className="text-sm font-medium">Sunset</span>
@@ -93,7 +93,7 @@ export function ThemeSwitcher() {
             </div>
           </div>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("sunrise")} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { setTheme("sunrise"); if (typeof document !== "undefined") document.documentElement.classList.remove("dark"); }} onMouseEnter={handleHover} className="flex items-center gap-2 cursor-pointer">
           <Sunrise className="h-4 w-4 text-muted-foreground mr-1" />
           <div className="flex flex-col gap-0.5 w-full">
             <span className="text-sm font-medium">Sunrise</span>

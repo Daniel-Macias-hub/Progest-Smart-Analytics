@@ -145,51 +145,38 @@ export const Topbar = memo(function Topbar() {
       </button>
 
       {/* Dark mode switch */}
-      <input type="checkbox" id="switch-mode" hidden checked={theme === "dark"} readOnly />
-      <label
-        htmlFor="switch-mode"
-        onClick={(e) => {
-          e.preventDefault();
-          const isDark = theme !== "dark";
-          const x = e.clientX;
-          const y = e.clientY;
-
-          if (!document.startViewTransition) {
-             setTheme(isDark ? "dark" : "light");
-             return;
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Cambiar tema de la plataforma"
+        onClick={() => {
+          const newTheme = theme === "dark" ? "light" : "dark"
+          setTheme(newTheme)
+          if (typeof document !== "undefined") {
+            if (newTheme === "dark") {
+              document.documentElement.classList.add("dark")
+            } else {
+              document.documentElement.classList.remove("dark")
+            }
           }
-
-          const transition = document.startViewTransition(() => {
-            setTheme(isDark ? "dark" : "light");
-          });
-
-          transition.ready.then(() => {
-            const endRadius = Math.hypot(
-              Math.max(x, window.innerWidth - x),
-              Math.max(y, window.innerHeight - y)
-            );
-            document.documentElement.animate(
-              {
-                clipPath: [
-                  `circle(0px at ${x}px ${y}px)`,
-                  `circle(${endRadius}px at ${x}px ${y}px)`
-                ]
-              },
-              {
-                duration: 600,
-                easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-                pseudoElement: "::view-transition-new(root)",
-              }
-            );
-          });
         }}
-        className="bg-admin-grey rounded-[50px] cursor-pointer flex items-center justify-between p-[3px] relative h-[25px] w-[50px] scale-[1.1] shrink-0 transition-transform duration-150 active:scale-95"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            const newTheme = theme === "dark" ? "light" : "dark"
+            setTheme(newTheme)
+          }
+        }}
+        className="bg-admin-grey rounded-[50px] cursor-pointer flex items-center justify-between p-[3px] relative h-[25px] w-[50px] scale-[1.1] shrink-0 transition-all duration-200 active:scale-95 border border-admin-grey/60 hover:shadow-sm"
       >
-        <Moon className="h-4 w-4 text-admin-yellow ml-[2px]" />
-        <Sun className="h-4 w-4 text-admin-orange mr-[2px]" />
-        <div className={cn("bg-admin-blue text-admin-light rounded-full absolute top-[2px] left-[2px] h-[21px] w-[21px] flex items-center justify-center transition-transform duration-300 ease-spring", theme === "dark" ? "translate-x-[25px]" : "translate-x-0")}>
-        </div>
-      </label>
+        <Moon className="h-3.5 w-3.5 text-amber-400 ml-[2px] z-10" />
+        <Sun className="h-3.5 w-3.5 text-amber-500 mr-[2px] z-10" />
+        <div
+          className={cn(
+            "bg-admin-blue text-admin-light rounded-full absolute top-[2px] left-[2px] h-[21px] w-[21px] flex items-center justify-center transition-transform duration-300 ease-spring shadow-sm",
+            theme === "dark" ? "translate-x-[25px]" : "translate-x-0"
+          )}
+        />
+      </div>
 
       {/* Notification Dropdown */}
       <DropdownMenu onOpenChange={(open) => { setNotifOpen(open); if (open) loadPreview() }}>
