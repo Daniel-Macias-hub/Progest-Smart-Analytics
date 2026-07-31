@@ -13,8 +13,18 @@ class AuthService:
     
     @staticmethod
     def verify_password(password: str, hashed: str) -> bool:
-        """Verificar password con bcrypt"""
-        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+        """Verificar password con bcrypt o fallback a werkzeug/plain"""
+        if not hashed:
+            return False
+        try:
+            if hashed.startswith('$2b$') or hashed.startswith('$2a$'):
+                return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+            from werkzeug.security import check_password_hash
+            if check_password_hash(hashed, password):
+                return True
+        except Exception:
+            pass
+        return password == hashed
     
     @staticmethod
     def validate_password(password: str) -> tuple[bool, str]:

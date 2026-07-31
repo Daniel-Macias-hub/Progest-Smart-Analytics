@@ -50,82 +50,119 @@ export function CalendarWithPresets({ date, onDateChange, disabled, minDate, max
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground"
-          )}
-          disabled={disabled}
+    <div className="flex flex-col gap-2 w-full">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant={"outline"}
+            className={cn(
+              "w-full justify-start text-left font-normal h-10 px-3 border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm",
+              !date && "text-muted-foreground"
+            )}
+            disabled={disabled}
+          >
+            <span className="mr-2">📅</span>
+            {date ? date.toLocaleDateString("es-ES", { 
+              weekday: "short",
+              day: "numeric", 
+              month: "long", 
+              year: "numeric" 
+            }) : <span className="text-muted-foreground font-medium">Seleccionar fecha...</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          align="center"
+          side="bottom"
+          sideOffset={8}
+          className="w-auto p-3 bg-popover border-border text-popover-foreground shadow-2xl rounded-xl z-[99999] max-w-[320px] flex flex-col gap-3"
         >
-          {date ? date.toLocaleDateString("es-ES", { 
-            day: "numeric", 
-            month: "long", 
-            year: "numeric" 
-          }) : <span>Seleccionar fecha</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="flex w-auto flex-col space-y-2 p-2">
-        <div className="rounded-md border">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setClamped}
-            disabled={isDateDisabled}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            size="sm"
-            disabled={disabled}
-            onClick={() => setClamped(new Date())}
-          >
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1"
-            size="sm"
-            disabled={disabled}
-            onClick={() => setClamped(addDays(new Date(), 1))}
-          >
-            Tomorrow
-          </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            size="sm"
-            disabled={disabled}
-            onClick={() => setClamped(addDays(new Date(), 3))}
-          >
-            In 3 days
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1"
-            size="sm"
-            disabled={disabled}
-            onClick={() => setClamped(addDays(new Date(), 7))}
-          >
-            In a week
-          </Button>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full"
-          size="sm"
-          disabled={disabled}
-          onClick={() => setClamped(addDays(new Date(), 14))}
-        >
-          In 2 weeks
-        </Button>
-      </PopoverContent>
-    </Popover>
+          <div className="flex items-center gap-2 pb-2 border-b border-border">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Fecha exacta:</span>
+            <input
+              type="date"
+              value={date ? date.toISOString().split("T")[0] : ""}
+              min={minDate ? minDate.toISOString().split("T")[0] : undefined}
+              max={maxDate ? maxDate.toISOString().split("T")[0] : undefined}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const [y, m, d] = e.target.value.split("-").map(Number)
+                  setClamped(new Date(y, m - 1, d))
+                } else {
+                  setClamped(undefined)
+                }
+              }}
+              className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </div>
+
+          <div className="rounded-md border border-border p-1 bg-background">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setClamped}
+              disabled={isDateDisabled}
+              className="p-1"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5 pt-1 border-t border-border">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Accesos rápidos:</span>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-medium bg-background hover:bg-primary/10 hover:text-primary border-border"
+                disabled={disabled}
+                onClick={() => setClamped(new Date())}
+              >
+                Hoy
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-medium bg-background hover:bg-primary/10 hover:text-primary border-border"
+                disabled={disabled}
+                onClick={() => setClamped(addDays(new Date(), 1))}
+              >
+                Mañana
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-medium bg-background hover:bg-primary/10 hover:text-primary border-border"
+                disabled={disabled}
+                onClick={() => setClamped(addDays(new Date(), 3))}
+              >
+                En 3 días
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-medium bg-background hover:bg-primary/10 hover:text-primary border-border"
+                disabled={disabled}
+                onClick={() => setClamped(addDays(new Date(), 7))}
+              >
+                En 1 semana
+              </Button>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 w-full text-xs font-medium bg-background hover:bg-primary/10 hover:text-primary border-border mt-0.5"
+              disabled={disabled}
+              onClick={() => setClamped(addDays(new Date(), 14))}
+            >
+              En 2 semanas
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   )
 }

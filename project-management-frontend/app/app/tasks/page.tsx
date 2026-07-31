@@ -357,8 +357,7 @@ export default function TasksPage() {
 
   // Funciones para manejar checklist
   const addChecklistItem = () => {
-    const raw = checklistInputRef.current?.value ?? checklistInput
-    const text = raw.trim()
+    const text = (checklistInput || "").trim()
     if (!text) return
     if (text.length > CHECKLIST_TEXT_MAX) {
       toast.error(`El checklist permite máximo ${CHECKLIST_TEXT_MAX} caracteres por item`)
@@ -374,7 +373,6 @@ export default function TasksPage() {
       completed: false
     }
     setChecklistItems((prev) => [...prev, newItem])
-    if (checklistInputRef.current) checklistInputRef.current.value = ""
     setChecklistInput("")
   }
 
@@ -529,8 +527,7 @@ export default function TasksPage() {
 
   // Funciones para manejar checklist en edición
   const addEditChecklistItem = () => {
-    const raw = editChecklistInputRef.current?.value ?? editChecklistInput
-    const text = raw.trim()
+    const text = (editChecklistInput || "").trim()
     if (!text) return
     if (text.length > CHECKLIST_TEXT_MAX) {
       toast.error(`El checklist permite máximo ${CHECKLIST_TEXT_MAX} caracteres por item`)
@@ -546,7 +543,6 @@ export default function TasksPage() {
       completed: false
     }
     setEditChecklistItems((prev) => [...prev, newItem])
-    if (editChecklistInputRef.current) editChecklistInputRef.current.value = ""
     setEditChecklistInput("")
   }
 
@@ -938,12 +934,11 @@ export default function TasksPage() {
                 <div className="flex gap-2">
                   <Input 
                     id="new-checklist"
-                    ref={checklistInputRef}
-                    defaultValue=""
+                    value={checklistInput}
                     onChange={(e) => setChecklistInput(e.target.value)}
-                    placeholder="Agregar item al checklist..." 
+                    placeholder="Escribe una sub-tarea y presiona Enter..." 
                     disabled={creating}
-                    className="text-base"
+                    className="text-sm bg-background border-input"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
@@ -953,25 +948,33 @@ export default function TasksPage() {
                   />
                   <Button 
                     type="button" 
-                    onClick={addChecklistItem}
-                    disabled={creating || checklistItems.length >= CHECKLIST_MAX_ITEMS}
-                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      addChecklistItem()
+                    }}
+                    disabled={creating || !checklistInput.trim() || checklistItems.length >= CHECKLIST_MAX_ITEMS}
+                    variant="default"
+                    className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-4"
                   >
-                    Agregar
+                    + Agregar
                   </Button>
                 </div>
                 {checklistItems.length > 0 && (
-                  <ul className="space-y-2 mt-2">
-                    {checklistItems.map(item => (
-                      <li key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
-                        <span className="text-sm">{item.text}</span>
+                  <ul className="space-y-1.5 mt-2 max-h-40 overflow-y-auto pr-1">
+                    {checklistItems.map((item, idx) => (
+                      <li key={item.id} className="flex items-center justify-between p-2.5 bg-accent/40 border border-border rounded-lg shadow-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs font-semibold text-muted-foreground w-4">{idx + 1}.</span>
+                          <span className="text-sm font-medium text-foreground truncate">{item.text}</span>
+                        </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => removeChecklistItem(item.id)}
                           disabled={creating}
-                          className="h-6 w-6 p-0"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                          title="Eliminar subtarea"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -979,8 +982,8 @@ export default function TasksPage() {
                     ))}
                   </ul>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  {checklistItems.length}/{CHECKLIST_MAX_ITEMS} items
+                <p className="text-xs text-muted-foreground font-medium">
+                  {checklistItems.length}/{CHECKLIST_MAX_ITEMS} items agregados
                 </p>
               </div>
             </div>
