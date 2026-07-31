@@ -401,8 +401,8 @@ def validate_invite_token(token):
                 }
             }), 400
         
-        # Obtener información del proyecto
-        project = Project.query.get(invite.project_id)
+        # Verificar si el usuario ya existe
+        existing_user = User.query.filter_by(email=invite.email.lower()).first()
         
         # Preparar respuesta
         return jsonify({
@@ -411,7 +411,9 @@ def validate_invite_token(token):
                 'email': invite.email,
                 'project_name': project.name if project else 'Proyecto',
                 'expires_at': invite.expires_at.isoformat(),
-                'status': invite.status
+                'status': invite.status,
+                'user_exists': existing_user is not None,
+                'existing_user_name': existing_user.name if existing_user else None
             }
         }), 200
         
@@ -422,6 +424,81 @@ def validate_invite_token(token):
                 'code': 'SERVER_ERROR',
                 'message': str(e)
             }
+        }), 500
+
+
+@invites_bp.route('/accept-existing/<token>', methods=['POST'])
+@jwt_required()
+def accept_invite_existing(token):
+    """
+    Permitir a un usuario ya registrado unirse a un proyecto manteniendo su cuenta y progreso actual.
+    """
+    try:
+        import uuid
+        from app.models import Membership
+        
+        user_id = get_current_user_id()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'NOT_FOUND', 'message': 'Usuario no encontrado'}
+            }), 404
+        
+        invite = Invite.query.filter_by(token=token).first()
+        if not invite:
+            return jsonify({
+                'success': False,
+                'error': {'code': 'INVALID_TOKEN', 'message': 'Invitación no encontrada'}
+            }), 404
+            
+        if invite.is_expired():
+            return jsonify({
+                'success': False,
+                'error': {'code': 'EXPIRED', 'message': 'La invitación ha expirado'}
+            }), 400
+
+        if invite.status == 'accepted':
+            return jsonify({
+                'success': False,
+                'error': {'code': 'ALREADY_ACCEPTED', 'message': 'Esta invitación ya fue aceptada'}
+            }), 400
+
+        membership = Membership.query.filter_by(user_id=user.id, project_id=invite.project_id).first()
+        if not membership:
+            membership = Membership(
+                id=str(uuid.uuid4()),
+                user_id=user.id,
+                project_id=invite.project_id,
+                role=invite.role or 'EMPLOYEE',
+                status='active'
+            )
+            db.session.add(membership)
+        else:
+            membership.status = 'active'
+
+        invite.status = 'accepted'
+        
+        notif = Notification(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            project_id=invite.project_id,
+            type='invite_accepted',
+            message=f"🎉 Te has unido al equipo exitosamente manteniendo tu progreso.",
+            read=False
+        )
+        db.session.add(notif)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Te has unido al proyecto exitosamente manteniendo tu cuenta y progreso.'
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': {'code': 'SERVER_ERROR', 'message': str(e)}
         }), 500
 
 

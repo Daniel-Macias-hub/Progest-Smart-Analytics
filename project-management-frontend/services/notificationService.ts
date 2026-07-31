@@ -52,8 +52,15 @@ export async function fetchNotifications(
     if (options?.offset !== undefined) params.set('offset', String(options.offset))
 
     const query = params.toString() ? `?${params.toString()}` : ''
-    const response = await api.get<{ notifications: BackendNotification[]; total: number }>(`/notifications${query}`)
-    return { notifications: response.notifications.map(mapNotificationFromBackend), total: response.total }
+    const response = await api.get<any>(`/notifications${query}`)
+    const payload = response?.data || response
+    const rawList = payload?.notifications || response?.notifications || []
+    const totalCount = payload?.total ?? response?.total ?? rawList.length
+
+    return { 
+      notifications: rawList.map(mapNotificationFromBackend), 
+      total: totalCount 
+    }
   } catch (error) {
     console.error('Error fetching notifications:', error)
     return { notifications: [], total: 0 }
@@ -108,8 +115,9 @@ export async function deleteNotification(notificationId: string): Promise<boolea
 
 export async function getUnreadCount(): Promise<number> {
   try {
-    const response = await api.get<UnreadCountResponse>('/notifications/unread-count')
-    return response.unread_count
+    const response = await api.get<any>('/notifications/unread-count')
+    const payload = response?.data || response
+    return payload?.unread_count ?? response?.unread_count ?? 0
   } catch (error) {
     console.error('Error getting unread count:', error)
     return 0
